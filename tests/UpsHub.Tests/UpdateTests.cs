@@ -210,7 +210,7 @@ internal sealed class FakeGitHub : IAsyncDisposable
 
     public string ReleaseJson(string tag, params string[] assets) => $$"""
         { "tag_name": "{{tag}}", "name": "UPS Hub {{tag}}", "draft": false, "prerelease": false,
-          "html_url": "https://github.com/cyberwill01/UPS-Hub/releases/tag/{{tag}}", "published_at": "2026-11-20T10:00:00Z",
+          "html_url": "https://github.com/AslanCore/UPS-Hub/releases/tag/{{tag}}", "published_at": "2026-11-20T10:00:00Z",
           "body": "### Changes\n- Faster discovery\n- Fixes",
           "assets": [ {{string.Join(",", assets.Select(a => $$"""{ "name": "{{a}}", "size": 0, "browser_download_url": "{{Base}}dl/{{a}}" }"""))}} ] }
         """;
@@ -220,7 +220,7 @@ internal sealed class FakeGitHub : IAsyncDisposable
 
 public class UpdateCheckerTests
 {
-    private const string Repo = "cyberwill01/UPS-Hub";
+    private const string Repo = "AslanCore/UPS-Hub";
     private static readonly SemVer Current = SemVer.TryParse("0.4.0")!;
 
     private sealed class Clock(DateTimeOffset now) : TimeProvider
@@ -240,7 +240,7 @@ public class UpdateCheckerTests
         Assert.Null(r.Release);
         Assert.Contains("No releases", r.Message);
         Assert.NotNull(state.LastCheckUtc);
-        Assert.Contains("/repos/cyberwill01/UPS-Hub/releases/latest", gh.Log[0]);
+        Assert.Contains("/repos/AslanCore/UPS-Hub/releases/latest", gh.Log[0]);
     }
 
     [Fact]
@@ -248,7 +248,7 @@ public class UpdateCheckerTests
     {
         await using var gh = new FakeGitHub();
         int hits = 0;
-        gh.Routes["/repos/cyberwill01/UPS-Hub/releases/latest"] = req =>
+        gh.Routes["/repos/AslanCore/UPS-Hub/releases/latest"] = req =>
         {
             hits++;
             if (req.Headers["If-None-Match"] == "\"abc\"") return (304, Array.Empty<byte>(), "\"abc\"");
@@ -284,7 +284,7 @@ public class UpdateCheckerTests
     {
         await using var gh = new FakeGitHub();
         string tag = "v0.4.0";
-        gh.Routes["/repos/cyberwill01/UPS-Hub/releases/latest"] = _ => FakeGitHub.Ok(gh.ReleaseJson(tag));
+        gh.Routes["/repos/AslanCore/UPS-Hub/releases/latest"] = _ => FakeGitHub.Ok(gh.ReleaseJson(tag));
         using var http = new HttpClient();
         var checker = new UpdateChecker(http, Repo, gh.Base);
         Assert.Equal(UpdateCheckOutcome.UpToDate, (await checker.CheckAsync(Current, new UpdateState(), false)).Outcome);
@@ -301,7 +301,7 @@ public class UpdateCheckerTests
     public async Task Rate_limit_and_unreachable_server_fail_softly()
     {
         await using var gh = new FakeGitHub();
-        gh.Routes["/repos/cyberwill01/UPS-Hub/releases/latest"] = _ => (403, "{}"u8.ToArray(), null);
+        gh.Routes["/repos/AslanCore/UPS-Hub/releases/latest"] = _ => (403, "{}"u8.ToArray(), null);
         using var http = new HttpClient();
         var r = await new UpdateChecker(http, Repo, gh.Base).CheckAsync(Current, new UpdateState(), true);
         Assert.Equal(UpdateCheckOutcome.Failed, r.Outcome);
@@ -328,7 +328,7 @@ public class UpdateCheckerTests
 
     [Fact]
     public void Repo_is_read_from_the_project_url() =>
-        Assert.Equal("cyberwill01/UPS-Hub", UpdateChecker.RepoFromUrl("https://github.com/cyberwill01/UPS-Hub"));
+        Assert.Equal("AslanCore/UPS-Hub", UpdateChecker.RepoFromUrl("https://github.com/AslanCore/UPS-Hub"));
 }
 
 public class UpdateDownloaderTests

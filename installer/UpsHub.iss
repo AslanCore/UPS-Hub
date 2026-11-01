@@ -16,7 +16,7 @@
 #define AppName "UPS Hub"
 #define AppPublisher "AslanCore"
 #define AppExe "UpsHub.exe"
-#define AppRepo "https://github.com/cyberwill01/UPS-Hub"
+#define AppRepo "https://github.com/AslanCore/UPS-Hub"
 #define AppUserModelId "AslanCore.UpsHub"
 
 [Setup]

@@ -81,7 +81,7 @@ public sealed class UpdateChecker
         _time = time ?? TimeProvider.System;
     }
 
-    /// <summary>"owner/repo" from a GitHub URL such as https://github.com/cyberwill01/UPS-Hub.</summary>
+    /// <summary>"owner/repo" from a GitHub URL such as https://github.com/AslanCore/UPS-Hub.</summary>
     public static string? RepoFromUrl(string? url)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || !u.Host.EndsWith("github.com", StringComparison.OrdinalIgnoreCase)) return null;

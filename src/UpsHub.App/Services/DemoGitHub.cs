@@ -65,7 +65,7 @@ public sealed class DemoGitHub : HttpMessageHandler
         var notes = System.Text.Json.JsonSerializer.Serialize(Notes);
         return $$"""
             { "tag_name": "v{{version}}", "name": "UPS Hub {{version}}", "draft": false, "prerelease": false,
-              "html_url": "https://github.com/cyberwill01/UPS-Hub/releases/tag/v{{version}}", "published_at": "{{DateTimeOffset.UtcNow.AddDays(-1):yyyy-MM-ddTHH:mm:ssZ}}",
+              "html_url": "https://github.com/AslanCore/UPS-Hub/releases/tag/v{{version}}", "published_at": "{{DateTimeOffset.UtcNow.AddDays(-1):yyyy-MM-ddTHH:mm:ssZ}}",
               "body": {{notes}},
               "assets": [ {{Asset(InstallerName, _installer.Length)}}, {{Asset(ReleaseInfo.ChecksumsName, _sums.Length)}}, {{Asset(ReleaseInfo.SignatureName, _sig.Length)}} ] }
             """;

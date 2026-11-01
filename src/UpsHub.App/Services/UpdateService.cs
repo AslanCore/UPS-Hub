@@ -43,7 +43,7 @@ public sealed class UpdateService : IDisposable
     {
         _svc = svc;
         _http = http ?? UpdateChecker.CreateHttpClient(AppInfo.Version);
-        _checker = new UpdateChecker(_http, repo ?? UpdateChecker.RepoFromUrl(AppInfo.RepoUrl) ?? "cyberwill01/UPS-Hub", apiBase);
+        _checker = new UpdateChecker(_http, repo ?? UpdateChecker.RepoFromUrl(AppInfo.RepoUrl) ?? "AslanCore/UPS-Hub", apiBase);
         _downloader = new UpdateDownloader(_http, key ?? ReleaseKey.Public);
         _store = new UpdateStateStore(svc.Store.Directory);
         _state = _store.Load();
