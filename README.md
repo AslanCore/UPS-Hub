@@ -4,7 +4,7 @@ A Windows client for [Network UPS Tools](https://networkupstools.org/) (NUT). It
 
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) [![Latest release](https://img.shields.io/github/v/release/cyberwill01/UPS-Hub)](https://github.com/cyberwill01/UPS-Hub/releases/latest)
 
-I used [WinNUT-Client](https://github.com/nutdotnet/WinNUT-Client) for years. It stopped being maintained, so I rebuilt it from scratch in C# (.NET 10 + Avalonia). It's a normal desktop app, not a web page in a wrapper.
+[WinNUT-Client](https://github.com/nutdotnet/WinNUT-Client) hasn't had a release since 2023, so I rebuilt it from scratch in C# (.NET 10 + Avalonia). It's a normal desktop app, not a web page in a wrapper.
 
 ![Dashboard](docs/screenshots/01-dashboard-online.png)
 
