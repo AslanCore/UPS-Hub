@@ -49,8 +49,6 @@ Things that get in the way:
 - **Zadig.** If you switched the UPS to WinUSB/libusb with Zadig, Windows no longer sees it as a HID device. Put it back with Device Manager → Update driver → Let me pick → USB Input Device.
 - **Linux preview.** The build reads `/dev/hidraw*`. Your user needs access, for example: `SUBSYSTEM=="hidraw", ATTRS{idVendor}=="051d", MODE="0660", GROUP="plugdev"`.
 
-It's only been tested against synthetic HID fixtures so far, so reports from real hardware are very welcome.
-
 ## Updates and release signing
 
 The app checks GitHub Releases at most once a day. You can also check from Settings → About, or turn the checks off there.
