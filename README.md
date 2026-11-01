@@ -34,7 +34,7 @@ On first start, a short setup wizard helps you connect to your NUT server. If yo
 
 ## Direct USB is experimental
 
-Reading a UPS directly over USB, without NUT, is a port of NUT's `usbhid-ups` driver. So far I've only tested it against my own APC BX1200MI.  If you try it, please [open an issue](https://github.com/cyberwill01/UPS-Hub/issues) with your UPS model and whether it worked. Going through a NUT server is the tested path.
+Reading a UPS directly over USB, without NUT, is a port of NUT's `usbhid-ups` driver. So far it's only been tested against an APC BX1200MI.  If you try it, please [open an issue](https://github.com/cyberwill01/UPS-Hub/issues) with your UPS model and whether it worked. Going through a NUT server is the tested path.
 
 ## Building
 
