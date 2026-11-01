@@ -1,7 +1,3 @@
-# Details
-
-The README stays short on purpose. This page has the rest.
-
 ## Setting up the NUT server
 
 On the machine that runs `upsd`:
@@ -40,7 +36,7 @@ UPS Hub can act on these triggers:
 - a forced shutdown (FSD) from the NUT primary;
 - optionally, a lost connection during an outage.
 
-Stale data never triggers anything. A countdown window comes first: you can cancel it, or extend it once. Power coming back cancels it too. The action can be shut down, hibernate or sleep.
+A countdown window comes first: you can cancel it, or extend it once. Power coming back cancels it too. The action can be shut down, hibernate or sleep.
 
 Shutdown rules → Test shutdown… really does the configured action at the end of the countdown. It asks for confirmation first, and Cancel stops it. With `--demo`, power actions are only logged.
 
@@ -117,6 +113,4 @@ Settings live in `%APPDATA%\UPS Hub\settings.json`. Passwords in it are encrypte
 - `installer`: the Inno Setup script.
 - `tests/UpsHub.Tests`: xUnit tests.
 
-## Idle rendering
 
-0.3.0 kept the GPU busy while idle. A looping animation on the status dot made the window redraw every frame. Since 0.4.0, nothing redraws unless a value changes, and visual timers stop while the window is hidden. `RenderingTests` makes sure looping animations don't come back.
