@@ -58,7 +58,7 @@ read-only use). Mistakes in the port are UPS Hub's, not NUT's.
 - Syne: Copyright (C) The Syne Project Authors. Static SemiBold/Bold instances made from the
   variable font. Licence: `src/UpsHub.App/Assets/Fonts/OFL-Syne.txt`.
 
-## Libraries (NuGet, not vendored)
+## Libraries 
 
 - Avalonia: MIT, https://avaloniaui.net
 - CommunityToolkit.Mvvm: MIT, .NET Foundation
