@@ -4,7 +4,7 @@ A Windows client for [Network UPS Tools](https://networkupstools.org/) (NUT). It
 
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) [![Latest release](https://img.shields.io/github/v/release/cyberwill01/UPS-Hub)](https://github.com/cyberwill01/UPS-Hub/releases/latest)
 
-[WinNUT-Client](https://github.com/nutdotnet/WinNUT-Client) hasn't had a release since 2023, so I rebuilt it from scratch in C# (.NET 10 + Avalonia). It's a normal desktop app, not a web page in a wrapper.
+Built it from scratch in C# (.NET 10 + Avalonia). 
 
 ![Dashboard](docs/screenshots/01-dashboard-online.png)
 
@@ -34,7 +34,7 @@ On first start, a short setup wizard helps you connect to your NUT server. If yo
 
 ## Direct USB is experimental
 
-Reading a UPS directly over USB, without NUT, is a port of NUT's `usbhid-ups` driver. So far I've only tested it against synthetic test data, not real hardware. If you try it, please [open an issue](https://github.com/cyberwill01/UPS-Hub/issues) with your UPS model and whether it worked. Going through a NUT server is the tested path.
+Reading a UPS directly over USB, without NUT, is a port of NUT's `usbhid-ups` driver. So far I've only tested it against my own APC BX1200MI.  If you try it, please [open an issue](https://github.com/cyberwill01/UPS-Hub/issues) with your UPS model and whether it worked. Going through a NUT server is the tested path.
 
 ## Building
 
