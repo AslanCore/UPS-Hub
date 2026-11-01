@@ -1,0 +1,113 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="using:UpsHub.App.ViewModels">
+  <!-- Shared by the Servers page and the setup wizard. -->
+    <DataTemplate x:Key="FoundServerTemplate" x:DataType="vm:FoundServerViewModel">
+      <Border Classes="panel" Padding="16" Margin="0,0,12,12" CornerRadius="14" VerticalAlignment="Top">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="38" Height="38" CornerRadius="9" Background="{StaticResource SurfaceBrush}" BoxShadow="{StaticResource ShadowBorder}" VerticalAlignment="Top">
+              <PathIcon Data="{StaticResource IconServer}" Width="15" Height="15" Foreground="{StaticResource PrimaryBrush}" />
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12,0,10,0" Spacing="1" VerticalAlignment="Center">
+              <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding Endpoint}" Classes="mono subtle" FontSize="12" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Top">
+              <Button Classes="primary" Padding="14,7" FontSize="12.5" Command="{Binding AddCommand}" IsVisible="{Binding !IsAdded}" IsEnabled="{Binding CanAdd}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <PathIcon Data="{StaticResource IconLock}" Width="11" Height="11" IsVisible="{Binding AuthRequired}" />
+                  <PathIcon Data="{StaticResource IconPlus}" Width="10" Height="10" IsVisible="{Binding !AuthRequired}" />
+                  <TextBlock Text="Add" />
+                </StackPanel>
+              </Button>
+              <Border Classes="pill" Background="{StaticResource StatusUpSoftBrush}" IsVisible="{Binding IsAdded}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <PathIcon Data="{StaticResource IconCheck}" Width="10" Height="10" Foreground="{StaticResource StatusUpBrush}" />
+                  <TextBlock Text="Added" Foreground="{StaticResource StatusUpBrush}" />
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Grid>
+
+          <ItemsControl ItemsSource="{Binding Badges}" Margin="0,0,0,-6">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:Badge">
+                <Border Classes="badge" Background="{Binding Background}"><TextBlock Text="{Binding Text}" Foreground="{Binding Foreground}" /></Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <ItemsControl ItemsSource="{Binding Ups}" IsVisible="{Binding HasUps}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:FoundUpsViewModel">
+                <Border Background="{StaticResource SurfaceBrush}" CornerRadius="10" Padding="12,9">
+                  <Grid ColumnDefinitions="*,Auto,Auto">
+                    <StackPanel Spacing="1">
+                      <TextBlock Text="{Binding Name}" Classes="mono" FontSize="13" FontWeight="SemiBold" />
+                      <TextBlock Text="{Binding Model}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding ChargeText}" Classes="mono" FontSize="13" VerticalAlignment="Center" Margin="10,0,12,0" />
+                    <Border Grid.Column="2" Classes="pill" Background="{Binding StatusSoft}" VerticalAlignment="Center">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Ellipse Width="6" Height="6" Fill="{Binding StatusBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" />
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Text="{Binding UpsSummary}" IsVisible="{Binding !HasUps}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" />
+
+          <Border Background="{StaticResource SurfaceBrush}" CornerRadius="10" Padding="12" IsVisible="{Binding ShowCredentials}">
+            <StackPanel Spacing="10">
+              <TextBlock Text="LOGIN · UPSD.USERS" Classes="kicker" />
+              <Grid ColumnDefinitions="*,10,*">
+                <TextBox Text="{Binding Username}" Watermark="Username" />
+                <TextBox Grid.Column="2" Text="{Binding Password}" PasswordChar="•" Watermark="Password" />
+              </Grid>
+              <TextBlock Text="{Binding Error}" IsVisible="{Binding HasError}" Foreground="{StaticResource StatusDownBrush}" FontSize="12.5" TextWrapping="Wrap" />
+              <Button Classes="primary" HorizontalAlignment="Left" Padding="14,7" FontSize="12.5" Command="{Binding AddCommand}" IsEnabled="{Binding !Busy}" Content="Test &amp; add" />
+            </StackPanel>
+          </Border>
+
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="{Binding Detail}" Classes="mono subtle" FontSize="11" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="link" Padding="8,2" FontSize="12" Content="Login…" Command="{Binding ToggleLoginCommand}" IsVisible="{Binding !IsAdded}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+    </DataTemplate>
+              <DataTemplate x:Key="LocalDeviceTemplate" x:DataType="vm:LocalDeviceItemViewModel">
+                <Border Classes="panel" Padding="14,12" CornerRadius="12">
+                  <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                    <Border Width="36" Height="36" CornerRadius="9" Background="{StaticResource SurfaceBrush}" BoxShadow="{StaticResource ShadowBorder}" VerticalAlignment="Center">
+                      <PathIcon Data="{StaticResource IconUsb}" Width="15" Height="15" Foreground="{StaticResource PrimaryBrush}" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0,12,0" Spacing="2" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Title}" FontSize="14.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding Detail}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                      <TextBlock Text="{Binding Meta}" Classes="mono subtle" FontSize="11.5" />
+                      <TextBlock Text="{Binding Hint}" IsVisible="{Binding HasHint}" Classes="subtle" FontSize="11.5" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Border Grid.Column="2" Classes="badge" Margin="0,0,12,0" VerticalAlignment="Center"
+                            Background="{StaticResource PrimarySoftBrush}"><TextBlock Text="{Binding Tier}" Foreground="{StaticResource PrimaryBrush}" /></Border>
+                    <Panel Grid.Column="3" VerticalAlignment="Center">
+                      <Button Classes="primary" Padding="14,7" FontSize="12.5" Command="{Binding AddCommand}" IsVisible="{Binding !Added}">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconPlus}" Width="10" Height="10" /><TextBlock Text="Add" /></StackPanel>
+                      </Button>
+                      <Border Classes="pill" Background="{StaticResource StatusUpSoftBrush}" IsVisible="{Binding Added}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                          <PathIcon Data="{StaticResource IconCheck}" Width="10" Height="10" Foreground="{StaticResource StatusUpBrush}" />
+                          <TextBlock Text="Added" Foreground="{StaticResource StatusUpBrush}" />
+                        </StackPanel>
+                      </Border>
+                    </Panel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+</ResourceDictionary>

@@ -1,0 +1,151 @@
+# Not active yet. To enable, move this file to .github/workflows/release.yml (pushing it needs a token with the
+# "workflow" scope) and add the UPSHUB_SIGNING_KEY repository secret.
+#
+# Builds, signs and publishes a UPS Hub release when a tag like v0.4.0 is pushed.
+#
+# Needs one repository secret:
+#   UPSHUB_SIGNING_KEY  the minisign secret key used to sign SHA256SUMS.txt (base64 key id + seed,
+#                       the text of the key file made by `upshub-release keygen`). Its public half is
+#                       embedded in the app (src/UpsHub.Core/Update/ReleaseKey.cs) and in minisign.pub.
+#
+# Optional, for Authenticode signing (see docs/CODE-SIGNING.md): AZURE_TENANT_ID, AZURE_CLIENT_ID,
+# AZURE_CLIENT_SECRET, TRUSTED_SIGNING_ACCOUNT, TRUSTED_SIGNING_PROFILE. Without them the exe and
+# installer are published unsigned (the update signature check still protects in-app updates).
+name: release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build, e.g. v0.4.0"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      HAS_TRUSTED_SIGNING: ${{ secrets.TRUSTED_SIGNING_ACCOUNT != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Version from tag must match Directory.Build.props
+        shell: pwsh
+        run: |
+          $ver = $env:TAG.TrimStart('v')
+          $props = [xml](Get-Content Directory.Build.props)
+          $built = ($props.Project.PropertyGroup | ForEach-Object { $_.Version } | Where-Object { $_ })[0]
+          if ($built -ne $ver) { throw "Tag $env:TAG does not match <Version>$built</Version>" }
+          "VERSION=$ver" | Out-File -Append $env:GITHUB_ENV
+
+      - name: Test
+        run: dotnet test tests/UpsHub.Tests -c Release
+
+      - name: Publish UpsHub.exe (self-contained, single file)
+        run: dotnet publish src/UpsHub.App -f net10.0-windows10.0.19041.0 -p:PublishProfile=win-x64
+
+      - name: Authenticode sign UpsHub.exe (optional)
+        if: env.HAS_TRUSTED_SIGNING == 'true'
+        uses: azure/trusted-signing-action@v0.5.1
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: https://weu.codesigning.azure.net/
+          trusted-signing-account-name: ${{ secrets.TRUSTED_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.TRUSTED_SIGNING_PROFILE }}
+          files-folder: artifacts/win-x64
+          files-folder-filter: exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Install Inno Setup 6
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "/DAppVersion=$env:VERSION" installer\UpsHub.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed" }
+
+      - name: Authenticode sign installer (optional)
+        if: env.HAS_TRUSTED_SIGNING == 'true'
+        uses: azure/trusted-signing-action@v0.5.1
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: https://weu.codesigning.azure.net/
+          trusted-signing-account-name: ${{ secrets.TRUSTED_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.TRUSTED_SIGNING_PROFILE }}
+          files-folder: artifacts/installer
+          files-folder-filter: exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Portable zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item "artifacts/installer/UpsHub-Setup-$env:VERSION.exe" out/
+          $tmp = "portable/UPS Hub"
+          New-Item -ItemType Directory -Force $tmp | Out-Null
+          Copy-Item artifacts/win-x64/UpsHub.exe, src/UpsHub.App/Assets/upshub.ico $tmp
+          Copy-Item LICENSE "$tmp/LICENSE.txt"; Copy-Item NOTICE.md "$tmp/NOTICE.txt"
+          Compress-Archive -Path "portable/UPS Hub" -DestinationPath "out/UpsHub-$env:VERSION-win-x64.zip"
+
+      - name: Checksums and minisign signature
+        shell: pwsh
+        env:
+          UPSHUB_SIGNING_KEY: ${{ secrets.UPSHUB_SIGNING_KEY }}
+        run: |
+          if (-not $env:UPSHUB_SIGNING_KEY) { throw "Secret UPSHUB_SIGNING_KEY is not set; refusing to publish an unsigned release." }
+          $tool = "tools/UpsHub.ReleaseTool"
+          dotnet run --project $tool -c Release -- sums out/SHA256SUMS.txt (Get-ChildItem out -File | ForEach-Object FullName)
+          dotnet run --project $tool -c Release -- sign out/SHA256SUMS.txt --key-env UPSHUB_SIGNING_KEY
+          dotnet run --project $tool -c Release -- verify out/SHA256SUMS.txt minisign.pub
+
+      - name: Release notes from CHANGELOG.md
+        shell: pwsh
+        run: |
+          $notes = "UPS Hub $env:VERSION"
+          if (Test-Path CHANGELOG.md) {
+            $text = Get-Content CHANGELOG.md -Raw
+            $m = [regex]::Match($text, "(?ms)^## \[?v?$([regex]::Escape($env:VERSION))\]?.*?\r?\n(.*?)(?=^## |\z)")
+            if ($m.Success) { $notes = $m.Groups[1].Value.Trim() }
+          }
+          $notes | Out-File -Encoding utf8 notes.md
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          gh release view $env:TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:TAG (Get-ChildItem out -File | ForEach-Object FullName) --clobber
+          } else {
+            gh release create $env:TAG (Get-ChildItem out -File | ForEach-Object FullName) --title "UPS Hub $env:VERSION" --notes-file notes.md
+          }

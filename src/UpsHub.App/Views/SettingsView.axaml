@@ -1,0 +1,188 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UpsHub.App.ViewModels"
+             x:Class="UpsHub.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <UserControl.Styles>
+    <Style Selector="Grid.row"><Setter Property="MinHeight" Value="44" /></Style>
+    <Style Selector="Grid.row > StackPanel"><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Spacing" Value="2" /><Setter Property="Margin" Value="0,0,16,0" /></Style>
+    <Style Selector="Grid.row TextBlock.t"><Setter Property="FontSize" Value="14" /><Setter Property="FontWeight" Value="Medium" /></Style>
+    <Style Selector="Grid.row TextBlock.d"><Setter Property="FontSize" Value="12.5" /><Setter Property="Foreground" Value="{StaticResource MutedBrush}" /><Setter Property="TextWrapping" Value="Wrap" /></Style>
+    <Style Selector="Grid.row > :is(Control).ctl"><Setter Property="Grid.Column" Value="1" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
+  </UserControl.Styles>
+  <ScrollViewer>
+    <StackPanel Margin="28,24,28,28" Spacing="16" MaxWidth="1160">
+      <StackPanel Spacing="4" Classes="stagger">
+        <TextBlock Text="PREFERENCES" Classes="label" />
+        <TextBlock Text="Settings" Classes="display" FontSize="32" />
+      </StackPanel>
+
+      <Grid ColumnDefinitions="*,16,*">
+        <StackPanel Spacing="16">
+          <Border Classes="card lg" Padding="22">
+            <StackPanel Spacing="6">
+              <TextBlock Text="STARTUP &amp; WINDOW" Classes="kicker" Margin="0,0,0,6" />
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <StackPanel><TextBlock Classes="t" Text="Start with Windows" /><TextBlock Classes="d" Text="{Binding StartupNote}" /></StackPanel>
+                <ToggleSwitch Classes="ctl" IsChecked="{Binding StartWithWindows}" IsEnabled="{Binding StartupSupported}" />
+              </Grid>
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <StackPanel><TextBlock Classes="t" Text="Start minimized to tray" /><TextBlock Classes="d" Text="Open quietly in the notification area." /></StackPanel>
+                <ToggleSwitch Classes="ctl" IsChecked="{Binding StartMinimized}" />
+              </Grid>
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <StackPanel><TextBlock Classes="t" Text="Close to tray" /><TextBlock Classes="d" Text="Keep monitoring when the window is closed. Quit from the tray menu." /></StackPanel>
+                <ToggleSwitch Classes="ctl" IsChecked="{Binding CloseToTray}" />
+              </Grid>
+              <Separator />
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <StackPanel><TextBlock Classes="t" Text="Theme" /><TextBlock Classes="d" Text="AslanCore dark." /></StackPanel>
+                <Border Classes="ctl pill" Background="{StaticResource ElevatedBrush}" Padding="10,4"><TextBlock Text="DARK" Classes="mono" FontSize="11" LetterSpacing="1.5" Foreground="{StaticResource MutedBrush}" /></Border>
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card lg" Padding="22">
+            <StackPanel Spacing="6">
+              <TextBlock Text="NOTIFICATIONS" Classes="kicker" Margin="0,0,0,6" />
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <StackPanel><TextBlock Classes="t" Text="Show notifications" /><TextBlock Classes="d" Text="Shutdown warnings always show." /></StackPanel>
+                <ToggleSwitch Classes="ctl" IsChecked="{Binding Notifications}" />
+              </Grid>
+              <Grid Classes="row" ColumnDefinitions="*,Auto" IsEnabled="{Binding Notifications}">
+                <StackPanel><TextBlock Classes="t" Text="Power events" /><TextBlock Classes="d" Text="On battery, low battery, power restored." /></StackPanel>
+                <ToggleSwitch Classes="ctl" IsChecked="{Binding NotifyPower}" />
+              </Grid>
+              <Grid Classes="row" ColumnDefinitions="*,Auto" IsEnabled="{Binding Notifications}">
+                <StackPanel><TextBlock Classes="t" Text="Connection events" /><TextBlock Classes="d" Text="Lost and restored contact with a server." /></StackPanel>
+                <ToggleSwitch Classes="ctl" IsChecked="{Binding NotifyConnection}" />
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Spacing="16">
+          <Border Classes="card lg" Padding="22">
+            <StackPanel Spacing="6">
+              <TextBlock Text="MONITORING" Classes="kicker" Margin="0,0,0,6" />
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <StackPanel><TextBlock Classes="t" Text="Poll interval" /><TextBlock Classes="d" Text="How often each server is asked for fresh values." /></StackPanel>
+                <NumericUpDown Classes="ctl" Value="{Binding PollInterval}" Minimum="1" Maximum="300" FormatString="0's'" />
+              </Grid>
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <StackPanel><TextBlock Classes="t" Text="Power factor" /><TextBlock Classes="d" Text="Used to estimate watts when the UPS only reports VA or load." /></StackPanel>
+                <NumericUpDown Classes="ctl" Value="{Binding PowerFactor}" Minimum="0.1" Maximum="1" Increment="0.05" FormatString="0.00" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card lg" Padding="22">
+            <StackPanel Spacing="10">
+              <TextBlock Text="DATA" Classes="kicker" />
+              <TextBlock Text="{Binding SettingsPath}" Classes="mono subtle" FontSize="11.5" TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Classes="ghost" Padding="12,7" FontSize="12.5" Content="Open folder" Command="{Binding OpenFolderCommand}" />
+                <Button Classes="ghost" Padding="12,7" FontSize="12.5" Content="Import from WinNUT" Command="{Binding ImportWinNutCommand}" IsEnabled="{Binding IsWindows}" />
+              </StackPanel>
+              <TextBlock Text="{Binding ImportResult}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card lg glow" Padding="22">
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+              <Border Classes="squircle" Width="56" Height="56" CornerRadius="12.6" VerticalAlignment="Top" BoxShadow="{StaticResource ShadowGlow}">
+                <Image Source="avares://UpsHub/Assets/logo-512.png" Stretch="UniformToFill" />
+              </Border>
+              <StackPanel Grid.Column="1" Margin="16,0,0,0" Spacing="3">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="{Binding AppName}" Classes="display h3" />
+                  <TextBlock Text="{Binding Version}" Classes="mono subtle" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                </StackPanel>
+                <TextBlock Text="{Binding TaglineUpper}" Classes="kicker accent" />
+                <TextBlock Classes="muted" FontSize="12.5" TextWrapping="Wrap" Margin="0,6,0,0"
+                           Text="Free software under the GNU GPL v3. Builds on WinNUT-Client by Gawindx and the nutdotnet maintainers, and on Network UPS Tools." />
+
+              </StackPanel>
+              <!-- Updates: GitHub Releases, inline states -->
+              <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="10" Margin="0,16,0,0" DataContext="{Binding Updates}" x:DataType="vm:UpdateViewModel">
+                <Separator Margin="0,0,0,2" />
+                <!-- state line -->
+                <StackPanel Spacing="3" IsVisible="{Binding HasStatus}">
+                  <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsChecking}">
+                    <Ellipse Classes="pulse" Width="7" Height="7" Fill="{StaticResource PrimaryBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="CHECKING GITHUB RELEASES" Classes="kicker" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="7" IsVisible="{Binding IsUpToDate}">
+                    <PathIcon Data="{StaticResource IconCheck}" Width="12" Height="12" Foreground="{StaticResource StatusUpBrush}" />
+                    <TextBlock Text="UP TO DATE" Classes="kicker" Foreground="{StaticResource StatusUpBrush}" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="7" IsVisible="{Binding IsNoReleases}">
+                    <PathIcon Data="{StaticResource IconCheck}" Width="12" Height="12" Foreground="{StaticResource MutedBrush}" />
+                    <TextBlock Text="NO RELEASES PUBLISHED YET" Classes="kicker" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsAvailable}">
+                    <TextBlock Text="UPDATE AVAILABLE" Classes="kicker accent" VerticalAlignment="Center" />
+                    <Border Classes="pill" Background="{StaticResource PrimarySoftBrush}" Padding="8,2">
+                      <TextBlock Text="{Binding NewVersion, StringFormat='v{0}'}" Classes="mono" FontSize="11" Foreground="{StaticResource PrimaryBrush}" />
+                    </Border>
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsDownloading}">
+                    <TextBlock Text="{Binding NewVersion, StringFormat='DOWNLOADING V{0}'}" Classes="kicker accent" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding ProgressText}" Classes="mono subtle" FontSize="11" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="7" IsVisible="{Binding IsReady}">
+                    <PathIcon Data="{StaticResource IconLock}" Width="12" Height="12" Foreground="{StaticResource StatusUpBrush}" />
+                    <TextBlock Text="SIGNATURE VERIFIED" Classes="kicker" Foreground="{StaticResource StatusUpBrush}" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="7" IsVisible="{Binding IsFailed}">
+                    <PathIcon Data="{StaticResource IconAlert}" Width="12" Height="12" Foreground="{StaticResource StatusDegradedBrush}" />
+                    <TextBlock Text="COULDN'T CHECK FOR UPDATES" Classes="kicker" Foreground="{StaticResource StatusDegradedBrush}" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding Message}" FontSize="12.5" Classes="muted" TextWrapping="Wrap" IsVisible="{Binding !IsChecking}" />
+                  <ProgressBar Classes="scan" Value="{Binding Progress}" Maximum="1" Margin="0,4,0,0" IsVisible="{Binding IsDownloading}" />
+                </StackPanel>
+                <!-- actions -->
+                <WrapPanel Orientation="Horizontal">
+                  <Button Classes="primary" Padding="12,7" FontSize="12.5" Command="{Binding InstallCommand}" IsVisible="{Binding IsAvailable}" Margin="0,0,8,6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <PathIcon Data="{StaticResource IconDownload}" Width="12" Height="12" />
+                      <TextBlock Text="{Binding InstallText}" />
+                    </StackPanel>
+                  </Button>
+                  <Button Classes="ghost" Padding="12,7" FontSize="12.5" Content="Cancel" Command="{Binding CancelDownloadCommand}" IsVisible="{Binding IsDownloading}" Margin="0,0,8,6" />
+                  <Button Classes="ghost" Padding="12,7" FontSize="12.5" Command="{Binding CheckCommand}" IsEnabled="{Binding CanCheck}" IsVisible="{Binding !IsAvailable}" Margin="0,0,8,6">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                      <PathIcon Data="{StaticResource IconRefresh}" Width="12" Height="12" />
+                      <TextBlock Text="{Binding CheckText}" />
+                    </StackPanel>
+                  </Button>
+                  <Button Classes="ghost" Padding="12,7" FontSize="12.5" Command="{Binding ReleaseNotesCommand}" IsVisible="{Binding IsAvailable}" Margin="0,0,8,6">
+                    <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Text="Release notes" /><PathIcon Data="{StaticResource IconOpen}" Width="10" Height="10" /></StackPanel>
+                  </Button>
+                </WrapPanel>
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel VerticalAlignment="Center" Spacing="2" Margin="0,0,12,0">
+                    <TextBlock FontSize="13.5" FontWeight="Medium" Text="Automatically check for updates" />
+                    <TextBlock FontSize="12" Classes="muted" TextWrapping="Wrap" Text="{Binding LastCheckText, StringFormat='At most once a day, from GitHub Releases. {0}.'}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoCheck}" VerticalAlignment="Center" />
+                </Grid>
+                <WrapPanel Margin="-10,0,0,0">
+                  <Button Classes="link" Padding="10,6" FontSize="12.5" Command="{Binding OpenRepoCommand}" ToolTip.Tip="{Binding RepoUrl}">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                      <PathIcon Data="{StaticResource IconGithub}" Width="13" Height="13" />
+                      <TextBlock Text="{Binding RepoLabel}" Classes="mono" FontSize="12" />
+                      <PathIcon Data="{StaticResource IconOpen}" Width="10" Height="10" Opacity="0.7" />
+                    </StackPanel>
+                  </Button>
+                  <Button Classes="link" Padding="10,6" FontSize="12.5" Content="Run setup again"
+                          Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).RunSetupAgainCommand}" />
+                </WrapPanel>
+              </StackPanel>
+            </Grid>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

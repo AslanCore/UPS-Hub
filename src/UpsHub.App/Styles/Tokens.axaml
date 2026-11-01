@@ -1,0 +1,69 @@
+<!--
+  AslanCore design tokens, translated from aslancore/merged/src/styles.css (@theme block).
+  Keep names close to the CSS variables so the two stay easy to compare.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Colors (core Cloud palette) -->
+  <Color x:Key="ColorBg">#0A0908</Color>
+  <Color x:Key="ColorSurface">#121110</Color>
+  <Color x:Key="ColorElevated">#1A1917</Color>
+  <Color x:Key="ColorElevated2">#22201E</Color>
+  <Color x:Key="ColorForeground">#F3F1EE</Color>
+  <Color x:Key="ColorMuted">#9A9690</Color>
+  <Color x:Key="ColorSubtle">#6B6762</Color>
+  <Color x:Key="ColorPrimary">#FF5C1A</Color>
+  <Color x:Key="ColorPrimaryHover">#FF7138</Color>
+  <Color x:Key="ColorPrimaryForeground">#140800</Color>
+  <!-- color-border: foreground 10%; shadow-border: 8%; hover: 16% -->
+  <Color x:Key="ColorBorder">#1AF3F1EE</Color>
+  <Color x:Key="ColorRing">#14F3F1EE</Color>
+  <Color x:Key="ColorRingHover">#29F3F1EE</Color>
+  <Color x:Key="ColorStatusUp">#3FA36A</Color>
+  <Color x:Key="ColorStatusDegraded">#C48A22</Color>
+  <Color x:Key="ColorStatusDown">#E24B3A</Color>
+  <Color x:Key="ColorMeter">#6ECF2B</Color>
+  <Color x:Key="ColorMeterWarn">#D4B44A</Color>
+  <Color x:Key="ColorMeterPeak">#E24B4B</Color>
+
+  <SolidColorBrush x:Key="BgBrush" Color="{StaticResource ColorBg}" />
+  <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource ColorSurface}" />
+  <SolidColorBrush x:Key="ElevatedBrush" Color="{StaticResource ColorElevated}" />
+  <SolidColorBrush x:Key="Elevated2Brush" Color="{StaticResource ColorElevated2}" />
+  <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ColorForeground}" />
+  <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource ColorMuted}" />
+  <SolidColorBrush x:Key="SubtleBrush" Color="{StaticResource ColorSubtle}" />
+  <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource ColorPrimary}" />
+  <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource ColorPrimaryHover}" />
+  <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="{StaticResource ColorPrimaryForeground}" />
+  <SolidColorBrush x:Key="PrimarySoftBrush" Color="#26FF5C1A" />
+  <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource ColorBorder}" />
+  <SolidColorBrush x:Key="RingBrush" Color="{StaticResource ColorRing}" />
+  <SolidColorBrush x:Key="StatusUpBrush" Color="{StaticResource ColorStatusUp}" />
+  <SolidColorBrush x:Key="StatusUpSoftBrush" Color="#263FA36A" />
+  <SolidColorBrush x:Key="StatusDegradedBrush" Color="{StaticResource ColorStatusDegraded}" />
+  <SolidColorBrush x:Key="StatusDownBrush" Color="{StaticResource ColorStatusDown}" />
+  <SolidColorBrush x:Key="StatusDownSoftBrush" Color="#26E24B3A" />
+  <SolidColorBrush x:Key="MeterBrush" Color="{StaticResource ColorMeter}" />
+
+  <!-- Fonts (embedded, same families as src/fonts.css) -->
+  <FontFamily x:Key="FontSans">avares://UpsHub/Assets/Fonts#IBM Plex Sans</FontFamily>
+  <FontFamily x:Key="FontMono">avares://UpsHub/Assets/Fonts#IBM Plex Mono</FontFamily>
+  <FontFamily x:Key="FontDisplay">avares://UpsHub/Assets/Fonts#Syne</FontFamily>
+
+  <!-- Radii: sm 8, md 12 (default), lg 16, xl 24 -->
+  <CornerRadius x:Key="RadiusSm">8</CornerRadius>
+  <CornerRadius x:Key="RadiusMd">12</CornerRadius>
+  <CornerRadius x:Key="RadiusLg">16</CornerRadius>
+  <CornerRadius x:Key="RadiusXl">24</CornerRadius>
+
+  <!-- Shadows: shadow-border / hover, plus the PVE accent glow -->
+  <BoxShadows x:Key="ShadowBorder">0 0 0 1 #14F3F1EE</BoxShadows>
+  <BoxShadows x:Key="ShadowBorderHover">0 0 0 1 #29F3F1EE</BoxShadows>
+  <BoxShadows x:Key="ShadowGlow">0 0 0 1 #47FF5C1A, 0 16 48 0 #2EFF5C1A</BoxShadows>
+  <BoxShadows x:Key="ShadowGlowStrong">0 0 0 1 #73FF5C1A, 0 16 48 0 #4DFF5C1A</BoxShadows>
+  <BoxShadows x:Key="ShadowRed">0 0 0 1 #73E24B3A, 0 16 48 0 #40E24B3A</BoxShadows>
+
+  <!-- Motion: ease-out cubic-bezier(0.23,1,0.32,1); 80/150/250/400 ms -->
+  <SplineEasing x:Key="EaseOut" X1="0.23" Y1="1" X2="0.32" Y2="1" />
+</ResourceDictionary>

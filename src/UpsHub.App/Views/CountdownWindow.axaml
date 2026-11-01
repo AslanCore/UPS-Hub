@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:UpsHub.App.ViewModels"
+        xmlns:c="using:UpsHub.App.Controls"
+        x:Class="UpsHub.App.Views.CountdownWindow"
+        x:DataType="vm:CountdownViewModel"
+        Title="{Binding WindowTitle}"
+        Icon="avares://UpsHub/Assets/upshub.ico"
+        Width="460" Height="430" CanResize="False" Topmost="True" ShowInTaskbar="True"
+        SystemDecorations="None" Background="Transparent" TransparencyLevelHint="Transparent"
+        WindowStartupLocation="CenterScreen">
+  <Border Margin="0" Background="{StaticResource SurfaceBrush}" CornerRadius="24" BoxShadow="{StaticResource ShadowRed}" ClipToBounds="True">
+    <Grid>
+      <c:GridBackdrop Opacity="0.9" />
+      <StackPanel Margin="30,26,30,26" Spacing="16">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Classes="squircle" Width="30" Height="30" CornerRadius="6.75">
+            <Image Source="avares://UpsHub/Assets/logo-512.png" Stretch="UniformToFill" />
+          </Border>
+          <TextBlock Grid.Column="1" Text="{Binding Kicker}" Classes="kicker accent" VerticalAlignment="Center" Margin="12,0,0,0" />
+          <Border Grid.Column="2" Classes="pill" Background="{StaticResource StatusDownSoftBrush}" Padding="8,2" IsVisible="{Binding IsTest}">
+            <TextBlock Text="{Binding TestBadge}" Classes="mono" FontSize="10" LetterSpacing="1.5" Foreground="{StaticResource StatusDownBrush}" />
+          </Border>
+        </Grid>
+
+        <StackPanel Spacing="2" HorizontalAlignment="Center">
+          <TextBlock Text="{Binding Heading}" Classes="display" FontSize="20" HorizontalAlignment="Center" />
+          <Grid Width="190" Height="190" Margin="0,6,0,0">
+            <c:RingGauge Value="{Binding Progress}" ValueBrush="{StaticResource StatusDownBrush}" Thickness="9" />
+            <TextBlock Text="{Binding TimeText}" Classes="value" FontSize="44" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Grid>
+        </StackPanel>
+
+        <TextBlock Text="{Binding Reason}" Classes="muted" FontSize="13" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
+
+        <Grid ColumnDefinitions="*,8,Auto,8,*">
+          <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="Cancel" Command="{Binding CancelCommand}" />
+          <Button Grid.Column="2" Classes="ghost" Content="{Binding ExtendText}" Command="{Binding ExtendCommand}" IsVisible="{Binding CanExtend}" />
+          <Button Grid.Column="4" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{Binding NowText}" Command="{Binding NowCommand}" />
+        </Grid>
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

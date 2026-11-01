@@ -1,0 +1,223 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UpsHub.App.ViewModels"
+             xmlns:c="using:UpsHub.App.Controls"
+             x:Class="UpsHub.App.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+  <ScrollViewer>
+    <StackPanel Margin="28,24,28,28" Spacing="16" MaxWidth="1160">
+
+      <!-- ===== Hero (Cloud header: kicker, display title, lede, live badge) ===== -->
+      <Border Classes="card stagger" Padding="0">
+        <Grid>
+          <c:GridBackdrop Opacity="0.8" />
+          <Grid ColumnDefinitions="*,Auto" Margin="32,28,32,28">
+            <StackPanel Spacing="6">
+              <TextBlock Text="{Binding Kicker}" Classes="label" />
+              <TextBlock Text="{Binding Title}" Classes="display h1" />
+              <TextBlock Text="{Binding Subtitle}" Classes="muted" FontSize="15" TextWrapping="Wrap" MaxWidth="620" HorizontalAlignment="Left" />
+              <TextBlock Text="{Binding DeviceText}" Classes="mono subtle" FontSize="11.5" Margin="0,6,0,0" IsVisible="{Binding HasData}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Spacing="10">
+              <Border Classes="pill" Background="{Binding PillSoft}" HorizontalAlignment="Right" Padding="12,5">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <Ellipse Classes.pulse="{Binding PillPulse}" Width="7" Height="7" Fill="{Binding PillBrush}" VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding PillText}" Foreground="{Binding PillBrush}" FontSize="12.5" />
+                </StackPanel>
+              </Border>
+              <TextBlock Text="{Binding UpdatedText}" Classes="mono subtle" FontSize="11" HorizontalAlignment="Right" />
+            </StackPanel>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <!-- ===== Update available (the first-run prompt moved to the setup wizard) ===== -->
+      <Border Classes="card lg glow" Padding="24" DataContext="{Binding Updates}" x:DataType="vm:UpdateViewModel"
+              IsVisible="{Binding ShowCard, FallbackValue=False}">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Width="52" Height="52" CornerRadius="13" Background="{StaticResource PrimarySoftBrush}" VerticalAlignment="Top" Margin="0,2,18,0">
+            <PathIcon Data="{StaticResource IconDownload}" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
+          </Border>
+          <StackPanel Grid.Column="1" Spacing="6">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="{Binding StatusKicker}" Classes="kicker accent" VerticalAlignment="Center" />
+              <TextBlock Text="{Binding Published}" Classes="mono subtle" FontSize="11" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="{Binding NewVersion, StringFormat='UPS Hub {0} is ready.'}" Classes="display h2" />
+            <Border Classes="panel" Padding="14,12" MaxWidth="680" HorizontalAlignment="Left" Margin="0,4,0,0">
+              <ScrollViewer MaxHeight="150">
+                <TextBlock Text="{Binding Notes}" FontSize="12.5" TextWrapping="Wrap" LineHeight="19" Foreground="{StaticResource MutedBrush}" />
+              </ScrollViewer>
+            </Border>
+            <StackPanel Spacing="6" IsVisible="{Binding IsDownloading}" Margin="0,6,0,0">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{Binding Message}" FontSize="12.5" Classes="muted" />
+                <TextBlock Text="{Binding ProgressText}" Classes="mono subtle" FontSize="11" VerticalAlignment="Center" />
+              </StackPanel>
+              <ProgressBar Classes="scan" Value="{Binding Progress}" Maximum="1" MaxWidth="420" HorizontalAlignment="Left" />
+            </StackPanel>
+            <TextBlock Text="{Binding Message}" FontSize="12.5" TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left"
+                       Foreground="{StaticResource StatusUpBrush}" IsVisible="{Binding IsReady}" />
+            <TextBlock Text="{Binding Message}" FontSize="12.5" TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left"
+                       Foreground="{StaticResource StatusDegradedBrush}" IsVisible="{Binding IsFailed}" />
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
+              <Button Classes="primary" Command="{Binding InstallCommand}" IsVisible="{Binding !IsBusy}" IsEnabled="{Binding !IsReady}">
+                <StackPanel Orientation="Horizontal" Spacing="8"><PathIcon Data="{StaticResource IconDownload}" Width="13" Height="13" /><TextBlock Text="{Binding InstallText}" /></StackPanel>
+              </Button>
+              <Button Classes="ghost" Content="Cancel download" Command="{Binding CancelDownloadCommand}" IsVisible="{Binding IsDownloading}" />
+              <Button Classes="ghost" Command="{Binding ReleaseNotesCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Text="Release notes" /><PathIcon Data="{StaticResource IconOpen}" Width="10" Height="10" /></StackPanel>
+              </Button>
+              <Button Classes="link" Content="Skip this version" Command="{Binding SkipCommand}" IsVisible="{Binding IsAvailable}" />
+              <Button Classes="link" Content="Later" Command="{Binding LaterCommand}" IsVisible="{Binding !IsBusy}" />
+            </StackPanel>
+            <TextBlock Classes="subtle" FontSize="11.5" Margin="0,2,0,0" TextWrapping="Wrap"
+                       Text="The installer is checked against the UPS Hub release signature and its SHA-256 before it runs. UPS Hub closes, updates and starts again." />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- ===== Empty state ===== -->
+      <Border Classes="card" Padding="28" IsVisible="{Binding ShowEmpty}">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="6">
+            <TextBlock Text="GET STARTED" Classes="kicker accent" />
+            <TextBlock Text="Connect to your NUT server" Classes="display h2" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Left"
+                       Text="UPS Hub reads your UPS from a NUT server (upsd, port 3493) on your network, for example the one on your Proxmox host. Let it scan your network, or add the server by address." />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <Button Classes="ghost" Command="{Binding FindServersCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8"><PathIcon Data="{StaticResource IconRadar}" Width="12" Height="12" /><TextBlock Text="Find servers" /></StackPanel>
+            </Button>
+            <Button Classes="primary" Command="{Binding AddServerCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8"><PathIcon Data="{StaticResource IconPlus}" Width="12" Height="12" /><TextBlock Text="Add server" /></StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- ===== UPS switcher when several are monitored ===== -->
+      <ItemsControl ItemsSource="{Binding Chips}" IsVisible="{Binding MultipleUps}">
+        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:UpsChipViewModel">
+            <Button Classes="seg" Classes.selected="{Binding IsSelected}" Padding="14,8" HorizontalAlignment="Left"
+                    Command="{Binding $parent[ItemsControl].((vm:DashboardViewModel)DataContext).SelectCommand}" CommandParameter="{Binding}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Width="7" Height="7" Fill="{Binding Dot}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Summary}" Classes="mono" FontSize="12" Opacity="0.8" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <!-- ===== Primary metrics ===== -->
+      <Grid ColumnDefinitions="*,16,*,16,*,16,*" IsVisible="{Binding HasData}" Classes="stagger">
+        <!-- Battery -->
+        <Border Classes="card lg" Grid.Column="0" Padding="18">
+          <StackPanel Spacing="4">
+            <TextBlock Text="BATTERY" Classes="kicker" />
+            <Grid Height="150" Margin="0,4,0,0">
+              <c:RingGauge Value="{Binding Battery}" HasValue="{Binding HasBattery}" ValueBrush="{Binding BatteryBrush}" Thickness="10" />
+              <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <TextBlock Text="{Binding BatteryText}" Classes="value" FontSize="34" />
+                  <TextBlock Text="%" Classes="unit" />
+                </StackPanel>
+                <TextBlock Text="{Binding BatteryState}" Classes="kicker" FontSize="9" HorizontalAlignment="Center" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </Border>
+        <!-- Load -->
+        <Border Classes="card lg" Grid.Column="2" Padding="18">
+          <StackPanel Spacing="4">
+            <TextBlock Text="LOAD" Classes="kicker" />
+            <Grid Height="150" Margin="0,4,0,0">
+              <c:RingGauge Value="{Binding Load}" HasValue="{Binding HasLoad}" ValueBrush="{Binding LoadBrush}" Thickness="10" />
+              <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <TextBlock Text="{Binding LoadText}" Classes="value" FontSize="34" />
+                  <TextBlock Text="%" Classes="unit" />
+                </StackPanel>
+                <TextBlock Text="OF CAPACITY" Classes="kicker" FontSize="9" HorizontalAlignment="Center" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </Border>
+        <!-- Runtime -->
+        <Border Classes="card lg" Grid.Column="4" Padding="18">
+          <Grid RowDefinitions="Auto,*,Auto">
+            <TextBlock Text="RUNTIME" Classes="kicker" />
+            <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding RuntimeText}" Classes="value" FontSize="40" />
+                <TextBlock Text="{Binding RuntimeUnit}" Classes="unit" Margin="6,0,0,7" />
+              </StackPanel>
+              <TextBlock Text="{Binding RuntimeNote}" Classes="muted" FontSize="12" />
+            </StackPanel>
+            <TextBlock Grid.Row="2" Text="{Binding RuleText}" Classes="subtle" FontSize="11" TextWrapping="Wrap" />
+          </Grid>
+        </Border>
+        <!-- Power -->
+        <Border Classes="card lg" Grid.Column="6" Padding="18">
+          <Grid RowDefinitions="Auto,*,Auto">
+            <TextBlock Text="POWER" Classes="kicker" />
+            <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding WattsText}" Classes="value" FontSize="40" />
+                <TextBlock Text="W" Classes="unit" Margin="6,0,0,7" />
+              </StackPanel>
+              <TextBlock Text="{Binding WattsNote}" Classes="muted" FontSize="12" />
+            </StackPanel>
+            <TextBlock Grid.Row="2" Classes="mono subtle" FontSize="11" Text="{Binding FlagsText, StringFormat='ups.status  {0}'}" />
+          </Grid>
+        </Border>
+      </Grid>
+
+      <!-- ===== Electrical + history ===== -->
+      <Grid ColumnDefinitions="*,16,1.25*" IsVisible="{Binding HasData}" Classes="stagger">
+        <Border Classes="card lg" Padding="20">
+          <StackPanel Spacing="14">
+            <TextBlock Text="ELECTRICAL" Classes="kicker" />
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+              <TextBlock Text="Input voltage" Classes="muted" FontSize="13" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal"><TextBlock Text="{Binding InputVText}" Classes="mono" FontSize="15" FontWeight="Medium" /><TextBlock Text=" V" Classes="mono subtle" FontSize="12" VerticalAlignment="Bottom" /></StackPanel>
+              <c:MeterBar Grid.Row="1" Grid.ColumnSpan="2" Margin="0,8,0,0" Minimum="180" Maximum="260" Value="{Binding InputV}" HasValue="{Binding HasInputV}" BarBrush="{StaticResource PrimaryBrush}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+              <TextBlock Text="Output voltage" Classes="muted" FontSize="13" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal"><TextBlock Text="{Binding OutputVText}" Classes="mono" FontSize="15" FontWeight="Medium" /><TextBlock Text=" V" Classes="mono subtle" FontSize="12" VerticalAlignment="Bottom" /></StackPanel>
+              <c:MeterBar Grid.Row="1" Grid.ColumnSpan="2" Margin="0,8,0,0" Minimum="180" Maximum="260" Value="{Binding OutputV}" HasValue="{Binding HasOutputV}" BarBrush="{StaticResource MeterBrush}" />
+            </Grid>
+            <Separator />
+            <Grid ColumnDefinitions="*,*">
+              <StackPanel Spacing="2">
+                <TextBlock Text="BATTERY V" Classes="kicker" FontSize="9" />
+                <TextBlock Classes="mono" FontSize="18" FontWeight="Medium" Text="{Binding BatteryVText}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="2">
+                <TextBlock Text="FREQUENCY HZ" Classes="kicker" FontSize="9" />
+                <TextBlock Classes="mono" FontSize="18" FontWeight="Medium" Text="{Binding FreqText}" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Classes="card lg" Padding="20">
+          <Grid RowDefinitions="Auto,*,Auto,*">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="BATTERY HISTORY" Classes="kicker" />
+              <TextBlock Grid.Column="1" Text="LAST 3 MIN" Classes="kicker" FontSize="9" />
+            </Grid>
+            <c:Sparkline Grid.Row="1" Margin="0,10,0,10" MinHeight="70" Points="{Binding ChargeHistory}" LineColor="#6ECF2B" />
+            <TextBlock Grid.Row="2" Text="LOAD HISTORY" Classes="kicker" />
+            <c:Sparkline Grid.Row="3" Margin="0,10,0,0" MinHeight="70" Points="{Binding LoadHistory}" LineColor="#FF5C1A" />
+          </Grid>
+        </Border>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

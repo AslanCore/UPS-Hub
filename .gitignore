@@ -1,0 +1,18 @@
+bin/
+obj/
+artifacts/
+*.user
+.vs/
+TestResults/
+
+# signing keys never belong in the repo
+*.key
+secrets/
+
+# build and release outputs
+*.exe
+*.zip
+*.minisig
+SHA256SUMS.txt
+release/
+portable/

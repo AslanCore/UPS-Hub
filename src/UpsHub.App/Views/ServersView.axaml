@@ -1,0 +1,290 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UpsHub.App.ViewModels"
+             x:Class="UpsHub.App.Views.ServersView"
+             x:DataType="vm:ServersViewModel">
+  <ScrollViewer>
+    <StackPanel Margin="28,24,28,28" Spacing="16" MaxWidth="1160">
+      <StackPanel Spacing="4" Classes="stagger">
+        <TextBlock Text="CONNECTIONS" Classes="label" />
+        <TextBlock Text="Servers &amp; local UPS" Classes="display" FontSize="32" />
+        <TextBlock Classes="muted" Text="NUT servers are polled over one connection for every UPS they host; a UPS on this PC's USB is read directly. Lost connections retry forever with backoff." TextWrapping="Wrap" />
+      </StackPanel>
+
+      <!-- ===== Discovery ===== -->
+      <Border Classes="card lg" Padding="22" DataContext="{Binding Discovery}">
+        <StackPanel Spacing="16">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="44" Height="44" CornerRadius="11" Background="{StaticResource PrimarySoftBrush}" VerticalAlignment="Top">
+              <PathIcon Data="{StaticResource IconRadar}" Width="18" Height="18" Foreground="{StaticResource PrimaryBrush}" />
+            </Border>
+            <StackPanel Grid.Column="1" Margin="16,0,16,0" Spacing="3" VerticalAlignment="Center">
+              <TextBlock Text="DISCOVERY" Classes="kicker accent" />
+              <TextBlock Text="Find servers on your network" Classes="display h2" />
+              <TextBlock Classes="muted" FontSize="12.5" TextWrapping="Wrap" HorizontalAlignment="Left" MaxWidth="640"
+                         Text="Checks this PC, saved hosts, mDNS (_nut._tcp), your ARP neighbours, then every address on each active network (up to /22) for upsd on port 3493." />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <Button Classes="ghost" Command="{Binding ToggleOptionsCommand}" ToolTip.Tip="Scan options">
+                <StackPanel Orientation="Horizontal" Spacing="8"><PathIcon Data="{StaticResource IconTune}" Width="13" Height="13" /><TextBlock Text="Options" /></StackPanel>
+              </Button>
+              <Button Classes="primary" Command="{Binding StartCommand}" IsVisible="{Binding !IsScanning}">
+                <StackPanel Orientation="Horizontal" Spacing="8"><PathIcon Data="{StaticResource IconRadar}" Width="13" Height="13" /><TextBlock Text="Find servers" /></StackPanel>
+              </Button>
+              <Button Classes="ghost danger" Command="{Binding CancelCommand}" IsVisible="{Binding IsScanning}">
+                <StackPanel Orientation="Horizontal" Spacing="8"><PathIcon Data="{StaticResource IconStop}" Width="11" Height="11" /><TextBlock Text="Stop" /></StackPanel>
+              </Button>
+            </StackPanel>
+          </Grid>
+
+          <!-- options -->
+          <Border Classes="panel" Padding="16" IsVisible="{Binding ShowOptions}">
+            <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,14,Auto">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="mDNS / DNS-SD" FontWeight="SemiBold" FontSize="13" />
+                  <TextBlock Text="Ask for _nut._tcp announcements (Avahi)" Classes="muted" FontSize="12" />
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1" Classes="ctl" IsChecked="{Binding UseMdns}" />
+              </Grid>
+              <Grid Grid.Column="2" ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="Include virtual adapters" FontWeight="SemiBold" FontSize="13" />
+                  <TextBlock Text="VPN, Hyper-V, WSL, Docker, VMware, VirtualBox" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1" Classes="ctl" IsChecked="{Binding IncludeVirtual}" />
+              </Grid>
+              <StackPanel Grid.Row="2" Spacing="6">
+                <TextBlock Text="Extra ports (3493 is always scanned)" Classes="muted" FontSize="12" />
+                <TextBox Classes="mono" Text="{Binding ExtraPorts}" Watermark="3494, 13493" />
+              </StackPanel>
+              <StackPanel Grid.Row="2" Grid.Column="2" Spacing="6">
+                <TextBlock Text="Extra hosts, ranges or subnets" Classes="muted" FontSize="12" />
+                <TextBox Classes="mono" Text="{Binding CustomTargets}" Watermark="192.168.20.0/24, 10.0.0.5-40, nas.lan" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- progress -->
+          <StackPanel Spacing="9" IsVisible="{Binding HasRun}">
+            <Grid ColumnDefinitions="Auto,*">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Width="7" Height="7" Fill="{StaticResource PrimaryBrush}" Classes="pulse" IsVisible="{Binding IsScanning}" VerticalAlignment="Center" />
+                <PathIcon Data="{StaticResource IconCheck}" Width="11" Height="11" Foreground="{StaticResource StatusUpBrush}" IsVisible="{Binding !IsScanning}" />
+                <TextBlock Text="{Binding PhaseText}" Classes="label" Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" />
+              </StackPanel>
+              <TextBlock Grid.Column="1" Text="{Binding ProgressText}" Classes="mono subtle" FontSize="11.5" Margin="14,0,0,0" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            </Grid>
+            <ProgressBar Classes="scan" Value="{Binding ProgressValue}" />
+            <ItemsControl ItemsSource="{Binding Networks}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <Border Classes="badge" Background="{StaticResource ElevatedBrush}"><TextBlock Text="{Binding}" Foreground="{StaticResource MutedBrush}" /></Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding Notes}" IsVisible="{Binding HasNotes}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <TextBlock Text="{Binding}" Classes="muted" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,3" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+
+          <!-- results: two independent columns so cards keep their own height -->
+          <Grid ColumnDefinitions="*,*" IsVisible="{Binding HasResults}">
+            <ItemsControl ItemsSource="{Binding LeftColumn}" ItemTemplate="{StaticResource FoundServerTemplate}" />
+            <ItemsControl Grid.Column="1" ItemsSource="{Binding RightColumn}" ItemTemplate="{StaticResource FoundServerTemplate}" />
+          </Grid>
+
+          <!-- nothing found: troubleshooting -->
+          <Border Classes="panel" Padding="20" IsVisible="{Binding ShowEmpty}">
+            <StackPanel Spacing="14">
+              <StackPanel Spacing="3">
+                <TextBlock Text="NOTHING ANSWERED ON PORT 3493" Classes="kicker" Foreground="{StaticResource StatusDegradedBrush}" />
+                <TextBlock Text="No NUT server found. Usual causes:" Classes="display h3" FontSize="17" />
+              </StackPanel>
+              <Grid ColumnDefinitions="*,20,*" RowDefinitions="Auto,16,Auto">
+                <Grid ColumnDefinitions="Auto,*">
+                  <Border Classes="step"><TextBlock Text="1" /></Border>
+                  <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6">
+                    <TextBlock Text="upsd only listens on localhost" FontWeight="SemiBold" FontSize="13" />
+                    <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" Text="By default upsd listens on 127.0.0.1 only. Add the server's LAN address to /etc/nut/upsd.conf, then restart it." />
+                    <Border Classes="code"><SelectableTextBlock Text="LISTEN 0.0.0.0 3493&#10;systemctl restart nut-server" /></Border>
+                  </StackPanel>
+                </Grid>
+                <Grid Grid.Column="2" ColumnDefinitions="Auto,*">
+                  <Border Classes="step"><TextBlock Text="2" /></Border>
+                  <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6">
+                    <TextBlock Text="A firewall blocks TCP 3493" FontWeight="SemiBold" FontSize="13" />
+                    <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" Text="Allow inbound TCP 3493 on the NUT server. On Proxmox, check the datacenter, node and container firewall." />
+                    <Border Classes="code"><SelectableTextBlock Text="ufw allow 3493/tcp" /></Border>
+                  </StackPanel>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+                  <Border Classes="step"><TextBlock Text="3" /></Border>
+                  <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6">
+                    <TextBlock Text="Add a user for this PC" FontWeight="SemiBold" FontSize="13" />
+                    <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" Text="Shutdown clients log in with a user from /etc/nut/upsd.users." />
+                    <Border Classes="code"><SelectableTextBlock Text="[upshub]&#10;  password = change-me&#10;  upsmon secondary" /></Border>
+                  </StackPanel>
+                </Grid>
+                <Grid Grid.Row="2" Grid.Column="2" ColumnDefinitions="Auto,*">
+                  <Border Classes="step"><TextBlock Text="4" /></Border>
+                  <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6">
+                    <TextBlock Text="Different network, VLAN or container" FontWeight="SemiBold" FontSize="13" />
+                    <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" Text="NUT in a container or VM needs its own LAN address (a bridge such as vmbr0, not NAT). For another subnet or VLAN, add its range under Options, or add the server manually below." />
+                  </StackPanel>
+                </Grid>
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <!-- ===== Local USB UPS ===== -->
+      <Border Classes="card lg" Padding="22" DataContext="{Binding Local}">
+        <StackPanel Spacing="16">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="44" Height="44" CornerRadius="11" Background="{StaticResource PrimarySoftBrush}" VerticalAlignment="Top">
+              <PathIcon Data="{StaticResource IconUsb}" Width="19" Height="19" Foreground="{StaticResource PrimaryBrush}" />
+            </Border>
+            <StackPanel Grid.Column="1" Margin="16,0,16,0" Spacing="3" VerticalAlignment="Center">
+              <TextBlock Text="LOCAL USB UPS" Classes="kicker accent" />
+              <TextBlock Text="A UPS plugged into this PC" Classes="display h2" />
+              <TextBlock Classes="muted" FontSize="12.5" TextWrapping="Wrap" HorizontalAlignment="Left" MaxWidth="640" Text="{Binding Summary}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+              <CheckBox IsChecked="{Binding ProbeSerial}" Content="Also probe COM ports" FontSize="12.5" ToolTip.Tip="Sends the Megatec Q1 query to each serial port. Leave off if other serial devices are attached." />
+              <Button Classes="primary" Command="{Binding ScanCommand}" IsEnabled="{Binding !Scanning}">
+                <StackPanel Orientation="Horizontal" Spacing="8"><PathIcon Data="{StaticResource IconUsb}" Width="13" Height="13" /><TextBlock Text="{Binding ScanLabel}" /></StackPanel>
+              </Button>
+            </StackPanel>
+          </Grid>
+
+          <TextBlock Text="{Binding Limitation}" IsVisible="{Binding HasLimitation}" Foreground="{StaticResource StatusDegradedBrush}" FontSize="12.5" TextWrapping="Wrap" />
+
+          <ItemsControl ItemsSource="{Binding Devices}" IsVisible="{Binding HasDevices}" ItemTemplate="{StaticResource LocalDeviceTemplate}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+          </ItemsControl>
+
+          <TextBlock Classes="subtle" FontSize="11.5" TextWrapping="Wrap"
+                     Text="Read-only: UPS Hub never sends beeper, test or shutdown commands to the UPS. Close PowerChute or a local NUT driver if they hold the device. If a UPS was switched to WinUSB with Zadig, roll it back to the HID driver in Device Manager (see README)." />
+        </StackPanel>
+      </Border>
+
+      <Grid ColumnDefinitions="1.15*,16,*">
+        <!-- ===== Server list ===== -->
+        <StackPanel Spacing="12">
+          <Border Classes="card lg" Padding="22" IsVisible="{Binding !HasServers}">
+            <StackPanel Spacing="4">
+              <TextBlock Text="NO SERVERS YET" Classes="kicker" />
+              <TextBlock Classes="muted" TextWrapping="Wrap" Text="Add the machine running upsd (on Proxmox, usually the host or the container running NUT, port 3493), or a UPS plugged into this PC above." />
+            </StackPanel>
+          </Border>
+          <ItemsControl ItemsSource="{Binding Servers}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="12" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ServerItemViewModel">
+                <Border Classes="card lg" Padding="20">
+                  <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <Border Width="40" Height="40" CornerRadius="9" Background="{StaticResource ElevatedBrush}" BoxShadow="{StaticResource ShadowBorder}">
+                        <Panel>
+                          <PathIcon Data="{StaticResource IconServer}" Width="16" Height="16" Foreground="{StaticResource PrimaryBrush}" IsVisible="{Binding !IsLocal}" />
+                          <PathIcon Data="{StaticResource IconUsb}" Width="17" Height="17" Foreground="{StaticResource PrimaryBrush}" IsVisible="{Binding IsLocal}" />
+                        </Panel>
+                      </Border>
+                      <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" Spacing="1">
+                        <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding Endpoint}" Classes="mono subtle" FontSize="12" />
+                      </StackPanel>
+                      <Border Grid.Column="2" Classes="pill" Background="{Binding StatusSoft}">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                          <Ellipse Width="6" Height="6" Fill="{Binding StatusBrush}" VerticalAlignment="Center" />
+                          <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" />
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                    <Border Classes="panel" Padding="12,10">
+                      <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding UpsText}" FontSize="13" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Detail}" Classes="mono subtle" FontSize="11.5" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Border>
+                    <TextBlock Text="{Binding Message}" IsVisible="{Binding HasMessage}" Foreground="{StaticResource StatusDegradedBrush}" FontSize="12.5" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Button Classes="ghost" Padding="12,7" FontSize="12.5" Content="{Binding ReconnectLabel}" Command="{Binding ReconnectCommand}" />
+                      <Button Classes="ghost danger" Padding="12,7" FontSize="12.5" Content="Remove" Command="{Binding RemoveCommand}" />
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+        </StackPanel>
+
+        <!-- ===== Add server form ===== -->
+        <Border Grid.Column="2" Classes="card lg" Padding="22" VerticalAlignment="Top">
+          <StackPanel Spacing="12">
+            <StackPanel Spacing="2">
+              <TextBlock Text="ADD SERVER" Classes="kicker accent" />
+              <TextBlock Text="Manual connection" Classes="display h2" />
+            </StackPanel>
+            <Grid ColumnDefinitions="*,10,110" RowDefinitions="Auto,Auto">
+              <TextBlock Text="Host or IP" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBlock Grid.Column="2" Text="Port" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBox Grid.Row="1" Classes="mono" Text="{Binding Host}" Watermark="192.0.2.20 or nas.local" />
+              <NumericUpDown Grid.Row="1" Grid.Column="2" MinWidth="0" Value="{Binding Port}" Minimum="1" Maximum="65535" FormatString="0" ShowButtonSpinner="False" />
+            </Grid>
+            <StackPanel Spacing="6">
+              <TextBlock Text="Name (optional)" Classes="muted" FontSize="12" />
+              <TextBox Text="{Binding DisplayName}" Watermark="NAS" />
+            </StackPanel>
+            <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto">
+              <TextBlock Text="Username" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBlock Grid.Column="2" Text="Password" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBox Grid.Row="1" Text="{Binding Username}" Watermark="from upsd.users" />
+              <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Password}" PasswordChar="•" Watermark="optional" />
+            </Grid>
+            <StackPanel Spacing="6">
+              <TextBlock Text="UPS name (empty = all on this server)" Classes="muted" FontSize="12" />
+              <TextBox Classes="mono" Text="{Binding UpsName}" Watermark="apc" />
+              <ItemsControl ItemsSource="{Binding FoundUps}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="x:String">
+                    <Button Classes="seg" Padding="10,5" Margin="0,0,6,6" FontSize="12" Content="{Binding}" HorizontalAlignment="Left"
+                            Command="{Binding $parent[ItemsControl].((vm:ServersViewModel)DataContext).PickUpsCommand}" CommandParameter="{Binding}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+            <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto">
+              <TextBlock Text="Encryption" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBlock Grid.Column="2" Text="Register as upsmon secondary" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <ComboBox Grid.Row="1" ItemsSource="{Binding TlsModes}" SelectedIndex="{Binding TlsIndex}" />
+              <ToggleSwitch Grid.Row="1" Grid.Column="2" IsChecked="{Binding LoginAsSecondary}" VerticalAlignment="Center" />
+            </Grid>
+            <Border Classes="panel" Padding="12,10" IsVisible="{Binding HasProbeResult}">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Ellipse Width="7" Height="7" VerticalAlignment="Top" Margin="0,6,0,0" Fill="{StaticResource StatusUpBrush}" IsVisible="{Binding ProbeOk}" />
+                <Ellipse Width="7" Height="7" VerticalAlignment="Top" Margin="0,6,0,0" Fill="{StaticResource StatusDownBrush}" IsVisible="{Binding !ProbeOk}" />
+                <TextBlock Text="{Binding ProbeResult}" TextWrapping="Wrap" FontSize="12.5" MaxWidth="360" HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+            <Grid ColumnDefinitions="*,10,*" Margin="0,4,0,0">
+              <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding TestCommand}" IsEnabled="{Binding !Busy}" Content="Test connection" />
+              <Button Grid.Column="2" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding AddCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8"><PathIcon Data="{StaticResource IconPlus}" Width="11" Height="11" /><TextBlock Text="Add server" /></StackPanel>
+              </Button>
+            </Grid>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

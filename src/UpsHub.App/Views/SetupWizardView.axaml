@@ -1,0 +1,313 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UpsHub.App.ViewModels"
+             xmlns:c="using:UpsHub.App.Controls"
+             x:Class="UpsHub.App.Views.SetupWizardView"
+             x:DataType="vm:SetupWizardViewModel">
+  <UserControl.Styles>
+    <Style Selector="Button.mode">
+      <Setter Property="Background" Value="{StaticResource ElevatedBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="14,12" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="Button.mode /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BoxShadow" Value="{StaticResource ShadowBorder}" />
+    </Style>
+    <Style Selector="Button.mode.selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource PrimarySoftBrush}" />
+      <Setter Property="BoxShadow" Value="0 0 0 1 #FF5C1A" />
+    </Style>
+    <Style Selector="Button.mode TextBlock.mt"><Setter Property="FontSize" Value="13.5" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+    <Style Selector="Button.mode TextBlock.md"><Setter Property="FontSize" Value="11.5" /><Setter Property="Foreground" Value="{StaticResource MutedBrush}" /><Setter Property="TextWrapping" Value="Wrap" /></Style>
+    <Style Selector="Border.rail"><Setter Property="Width" Value="24" /><Setter Property="Height" Value="24" /><Setter Property="CornerRadius" Value="7" />
+      <Setter Property="Background" Value="{StaticResource ElevatedBrush}" /></Style>
+    <Style Selector="Border.rail TextBlock"><Setter Property="FontFamily" Value="{StaticResource FontMono}" /><Setter Property="FontSize" Value="11.5" />
+      <Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{StaticResource SubtleBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
+    <Style Selector="Border.rail.on"><Setter Property="Background" Value="{StaticResource PrimaryBrush}" /></Style>
+    <Style Selector="Border.rail.on TextBlock"><Setter Property="Foreground" Value="{StaticResource PrimaryForegroundBrush}" /></Style>
+    <Style Selector="Border.rail.done"><Setter Property="Background" Value="{StaticResource PrimarySoftBrush}" /></Style>
+    <Style Selector="Border.rail.done TextBlock"><Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" /></Style>
+    <Style Selector="TextBlock.railt"><Setter Property="FontSize" Value="13" /><Setter Property="Foreground" Value="{StaticResource MutedBrush}" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
+    <Style Selector="TextBlock.railt.on"><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+    <Style Selector="Grid.row"><Setter Property="MinHeight" Value="44" /></Style>
+    <Style Selector="Grid.row TextBlock.t"><Setter Property="FontSize" Value="14" /><Setter Property="FontWeight" Value="Medium" /></Style>
+    <Style Selector="Grid.row TextBlock.d"><Setter Property="FontSize" Value="12.5" /><Setter Property="Foreground" Value="{StaticResource MutedBrush}" /><Setter Property="TextWrapping" Value="Wrap" /></Style>
+  </UserControl.Styles>
+
+  <Panel Background="{StaticResource BgBrush}">
+    <c:GridBackdrop />
+    <Border Classes="card lg glow" Padding="0" MaxWidth="1040" MaxHeight="700" Margin="40,64,40,40" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+      <Grid ColumnDefinitions="248,*">
+        <!-- ===== Rail ===== -->
+        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0" Padding="22,24">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,28">
+              <Image Source="avares://UpsHub/Assets/icon-64.png" Width="36" Height="36" RenderOptions.BitmapInterpolationMode="HighQuality" />
+              <StackPanel VerticalAlignment="Center" Spacing="1">
+                <TextBlock Text="{Binding AppName}" Classes="display" FontSize="16" />
+                <TextBlock Text="SETUP" Classes="kicker accent" />
+              </StackPanel>
+            </StackPanel>
+            <TextBlock DockPanel.Dock="Bottom" Classes="subtle" FontSize="11.5" TextWrapping="Wrap"
+                       Text="Everything here can be changed later in Servers, Shutdown rules and Settings." />
+            <StackPanel Spacing="14">
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <Border Classes="rail" Classes.on="{Binding IsWelcome}" Classes.done="{Binding Step1Done}"><TextBlock Text="1" /></Border>
+                <TextBlock Classes="railt" Classes.on="{Binding IsWelcome}" Text="Welcome" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <Border Classes="rail" Classes.on="{Binding IsConnect}" Classes.done="{Binding Step2Done}"><TextBlock Text="2" /></Border>
+                <TextBlock Classes="railt" Classes.on="{Binding IsConnect}" Text="Connect a UPS" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <Border Classes="rail" Classes.on="{Binding IsShutdownStep}" Classes.done="{Binding Step3Done}"><TextBlock Text="3" /></Border>
+                <TextBlock Classes="railt" Classes.on="{Binding IsShutdownStep}" Text="Shutdown basics" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <Border Classes="rail" Classes.on="{Binding IsStartup}" Classes.done="{Binding Step4Done}"><TextBlock Text="4" /></Border>
+                <TextBlock Classes="railt" Classes.on="{Binding IsStartup}" Text="Startup &amp; alerts" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <Border Classes="rail" Classes.on="{Binding IsDone}"><TextBlock Text="5" /></Border>
+                <TextBlock Classes="railt" Classes.on="{Binding IsDone}" Text="Done" />
+              </StackPanel>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <!-- ===== Content ===== -->
+        <DockPanel Grid.Column="1">
+          <!-- nav -->
+          <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="28,14" IsVisible="{Binding ShowNav}">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+              <Button Classes="ghost" Content="Back" Command="{Binding BackCommand}" IsVisible="{Binding CanBack}" />
+              <TextBlock Grid.Column="1" Text="{Binding StepNumber, StringFormat='STEP {0} OF 5'}" Classes="mono subtle" FontSize="11" LetterSpacing="1.5" VerticalAlignment="Center" Margin="16,0" />
+              <Button Grid.Column="2" Classes="link" Content="Set up later" Command="{Binding LaterCommand}" Margin="0,0,8,0" />
+              <Button Grid.Column="3" Classes="primary" Content="{Binding NextText}" Command="{Binding NextCommand}" />
+            </Grid>
+          </Border>
+
+          <ScrollViewer Padding="32,28,32,20">
+            <Panel>
+              <!-- 1 · Welcome -->
+              <StackPanel Spacing="14" IsVisible="{Binding IsWelcome}" VerticalAlignment="Center" MaxWidth="560" HorizontalAlignment="Left" Margin="0,30,0,0">
+                <TextBlock Text="WELCOME" Classes="kicker accent" />
+                <TextBlock Text="Keep this PC safe when the power goes." Classes="display" FontSize="30" TextWrapping="Wrap" />
+                <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="14" LineHeight="21"
+                           Text="UPS Hub watches your UPS, through a NUT server on your network or a USB cable to this PC, and shuts the PC down cleanly before the battery runs out. This takes about a minute." />
+                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,14,0,0">
+                  <Button Classes="primary" Command="{Binding BeginCommand}" Padding="18,10">
+                    <StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="Get started" /><PathIcon Data="{StaticResource IconChevron}" Width="12" Height="12" /></StackPanel>
+                  </Button>
+                  <Button Classes="link" Content="Set up later" Command="{Binding LaterCommand}" />
+                </StackPanel>
+              </StackPanel>
+
+              <!-- 2 · Connect -->
+              <StackPanel Spacing="14" IsVisible="{Binding IsConnect}">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="CONNECT A UPS" Classes="kicker accent" />
+                  <TextBlock Text="Where is your UPS?" Classes="display h2" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,10,*,10,*,10,*">
+                  <Button Classes="mode" Classes.selected="{Binding IsAuto}" Command="{Binding SetModeCommand}" CommandParameter="Auto">
+                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconRadar}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource PrimaryBrush}" />
+                      <TextBlock Classes="mt" Text="Auto-detect" /><TextBlock Classes="md" Text="Scan the network for NUT servers" /></StackPanel>
+                  </Button>
+                  <Button Grid.Column="2" Classes="mode" Classes.selected="{Binding IsUsb}" Command="{Binding SetModeCommand}" CommandParameter="Usb">
+                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconUsb}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource PrimaryBrush}" />
+                      <TextBlock Classes="mt" Text="USB on this PC" /><TextBlock Classes="md" Text="A UPS plugged in here" /></StackPanel>
+                  </Button>
+                  <Button Grid.Column="4" Classes="mode" Classes.selected="{Binding IsManual}" Command="{Binding SetModeCommand}" CommandParameter="Manual">
+                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconServer}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource PrimaryBrush}" />
+                      <TextBlock Classes="mt" Text="Enter manually" /><TextBlock Classes="md" Text="Address of your NUT server" /></StackPanel>
+                  </Button>
+                  <Button Grid.Column="6" Classes="mode" Classes.selected="{Binding IsImport}" Command="{Binding SetModeCommand}" CommandParameter="Import" IsEnabled="{Binding HasWinNut}">
+                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconTune}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource PrimaryBrush}" />
+                      <TextBlock Classes="mt" Text="Import WinNUT" /><TextBlock Classes="md" Text="{Binding HasWinNut, Converter={x:Static vm:WizardText.WinNutHint}}" /></StackPanel>
+                  </Button>
+                </Grid>
+
+                <!-- auto -->
+                <Panel IsVisible="{Binding IsAuto}">
+                <StackPanel Spacing="10" DataContext="{Binding Discovery}" x:DataType="vm:DiscoveryViewModel">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Spacing="6">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Ellipse Width="7" Height="7" Fill="{StaticResource PrimaryBrush}" Classes="pulse" IsVisible="{Binding IsScanning}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding PhaseText}" Classes="kicker" VerticalAlignment="Center" />
+                      </StackPanel>
+                      <TextBlock Text="{Binding ProgressText}" Classes="mono subtle" FontSize="11" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                      <Button Classes="ghost" Content="Stop" Command="{Binding CancelCommand}" IsVisible="{Binding IsScanning}" />
+                      <Button Classes="ghost" Content="Scan again" Command="{Binding StartCommand}" IsVisible="{Binding !IsScanning}" />
+                    </StackPanel>
+                  </Grid>
+                  <ProgressBar Classes="scan" Value="{Binding ProgressValue}" IsVisible="{Binding IsScanning}" />
+                  <ItemsControl ItemsSource="{Binding Results}" ItemTemplate="{StaticResource FoundServerTemplate}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="10" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                  </ItemsControl>
+                  <TextBlock Classes="muted" FontSize="12.5" TextWrapping="Wrap" IsVisible="{Binding ShowEmpty}"
+                             Text="No NUT server answered on port 3493. Make sure upsd listens on the server's LAN address, or enter it manually." />
+                </StackPanel>
+                </Panel>
+
+                <!-- usb -->
+                <Panel IsVisible="{Binding IsUsb}">
+                <StackPanel Spacing="10" DataContext="{Binding Local}" x:DataType="vm:LocalUpsViewModel">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding Summary}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <Button Grid.Column="1" Classes="ghost" Content="{Binding ScanLabel}" Command="{Binding ScanCommand}" IsEnabled="{Binding !Scanning}" />
+                  </Grid>
+                  <TextBlock Text="{Binding Limitation}" IsVisible="{Binding HasLimitation}" Foreground="{StaticResource StatusDegradedBrush}" FontSize="12.5" TextWrapping="Wrap" />
+                  <ItemsControl ItemsSource="{Binding Devices}" ItemTemplate="{StaticResource LocalDeviceTemplate}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                  </ItemsControl>
+                </StackPanel>
+                </Panel>
+
+                <!-- manual -->
+                <Border Classes="panel" Padding="18" IsVisible="{Binding IsManual}">
+                  <StackPanel Spacing="10">
+                    <Grid ColumnDefinitions="2*,10,*" RowDefinitions="Auto,Auto,8,Auto,Auto">
+                      <TextBlock Text="HOST OR IP" Classes="label" />
+                      <TextBox Grid.Row="1" Text="{Binding Host}" Watermark="192.0.2.10 or nut.lan" />
+                      <TextBlock Grid.Column="2" Text="PORT" Classes="label" />
+                      <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding Port}" Minimum="1" Maximum="65535" FormatString="0" ShowButtonSpinner="False" />
+                      <TextBlock Grid.Row="3" Text="UPS NAME (OPTIONAL)" Classes="label" />
+                      <TextBox Grid.Row="4" Text="{Binding UpsName}" Watermark="all UPSes on the server" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto">
+                      <TextBlock Text="USERNAME (OPTIONAL)" Classes="label" />
+                      <TextBox Grid.Row="1" Text="{Binding Username}" />
+                      <TextBlock Grid.Column="2" Text="PASSWORD" Classes="label" />
+                      <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Password}" PasswordChar="•" />
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Button Classes="ghost" Content="Test connection" Command="{Binding TestManualCommand}" IsEnabled="{Binding !ManualBusy}" />
+                      <Button Classes="primary" Content="Add server" Command="{Binding AddManualCommand}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding ManualResult}" FontSize="12.5" TextWrapping="Wrap" Foreground="{Binding ManualOk, Converter={x:Static vm:WizardText.OkBrush}}" />
+                  </StackPanel>
+                </Border>
+
+                <!-- import -->
+                <Border Classes="panel" Padding="18" IsVisible="{Binding IsImport}">
+                  <StackPanel Spacing="10">
+                    <TextBlock Text="FOUND WINNUT SETTINGS" Classes="kicker accent" />
+                    <ItemsControl ItemsSource="{Binding ImportPreview}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                          <TextBlock Text="{Binding}" Classes="mono" FontSize="12" Margin="0,2" TextWrapping="Wrap" />
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Classes="muted" FontSize="12.5" TextWrapping="Wrap" IsVisible="{Binding ImportHasServer}"
+                               Text="WinNUT keeps the NUT password encrypted with a key UPS Hub can't read, so it isn't imported. If your server needs a login, enter it here." />
+                    <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto" IsVisible="{Binding ImportHasServer}">
+                      <TextBlock Text="USERNAME" Classes="label" />
+                      <TextBox Grid.Row="1" Text="{Binding ImportUsername}" />
+                      <TextBlock Grid.Column="2" Text="PASSWORD" Classes="label" />
+                      <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding ImportPassword}" PasswordChar="•" />
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Button Classes="primary" Content="Import these settings" Command="{Binding ApplyImportCommand}" IsEnabled="{Binding !Imported}" />
+                      <TextBlock Text="{Binding ImportResult}" Foreground="{StaticResource StatusUpBrush}" FontSize="12.5" VerticalAlignment="Center" TextWrapping="Wrap" />
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <!-- added so far -->
+                <Border Classes="panel" Padding="14,10" IsVisible="{Binding HasConnected}" Background="{StaticResource StatusUpSoftBrush}">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding ConnectedCount, StringFormat='CONNECTED · {0}'}" Classes="kicker" Foreground="{StaticResource StatusUpBrush}" />
+                    <ItemsControl ItemsSource="{Binding Connected}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String"><TextBlock Text="{Binding}" FontSize="12.5" /></DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+
+              <!-- 3 · Shutdown basics -->
+              <StackPanel Spacing="14" IsVisible="{Binding IsShutdownStep}" MaxWidth="640" HorizontalAlignment="Left">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="SHUTDOWN BASICS" Classes="kicker accent" />
+                  <TextBlock Text="What should happen on a long outage?" Classes="display h2" />
+                </StackPanel>
+                <Grid Classes="row" ColumnDefinitions="*,Auto">
+                  <StackPanel><TextBlock Classes="t" Text="Protect this PC automatically" /><TextBlock Classes="d" Text="Act before the battery runs out. Off = notifications only." /></StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding RulesEnabled}" VerticalAlignment="Center" />
+                </Grid>
+                <Grid ColumnDefinitions="*,10,*,10,*" IsEnabled="{Binding RulesEnabled}">
+                  <Button Classes="seg" Classes.selected="{Binding IsActShutdown}" Command="{Binding SetActionCommand}" CommandParameter="Shutdown">
+                    <StackPanel Spacing="3"><TextBlock Text="Shut down" FontWeight="SemiBold" HorizontalAlignment="Center" /><TextBlock Text="POWER OFF" Classes="segsub" /></StackPanel>
+                  </Button>
+                  <Button Grid.Column="2" Classes="seg" Classes.selected="{Binding IsActHibernate}" Command="{Binding SetActionCommand}" CommandParameter="Hibernate">
+                    <StackPanel Spacing="3"><TextBlock Text="Hibernate" FontWeight="SemiBold" HorizontalAlignment="Center" /><TextBlock Text="SAVE TO DISK" Classes="segsub" /></StackPanel>
+                  </Button>
+                  <Button Grid.Column="4" Classes="seg" Classes.selected="{Binding IsActSleep}" Command="{Binding SetActionCommand}" CommandParameter="Sleep">
+                    <StackPanel Spacing="3"><TextBlock Text="Sleep" FontWeight="SemiBold" HorizontalAlignment="Center" /><TextBlock Text="LOW POWER" Classes="segsub" /></StackPanel>
+                  </Button>
+                </Grid>
+                <Grid ColumnDefinitions="*,10,*,10,*" RowDefinitions="Auto,Auto" IsEnabled="{Binding RulesEnabled}">
+                  <TextBlock Text="BATTERY BELOW (%)" Classes="label" />
+                  <NumericUpDown Grid.Row="1" Value="{Binding BatteryBelow}" Minimum="0" Maximum="95" Increment="5" FormatString="0" />
+                  <TextBlock Grid.Column="2" Text="OR RUNTIME BELOW (MIN)" Classes="label" />
+                  <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding RuntimeMinutesBelow}" Minimum="0" Maximum="120" Increment="1" FormatString="0.#" />
+                  <TextBlock Grid.Column="4" Text="WARNING (S)" Classes="label" />
+                  <NumericUpDown Grid.Row="1" Grid.Column="4" Value="{Binding CountdownSeconds}" Minimum="0" Maximum="600" Increment="10" FormatString="0" />
+                </Grid>
+                <Border Classes="panel" Padding="14,12">
+                  <TextBlock Text="{Binding RuleSummary}" FontSize="13" TextWrapping="Wrap" />
+                </Border>
+                <Button Classes="link" Content="Use the recommended defaults" Command="{Binding ResetRulesCommand}" HorizontalAlignment="Left" Margin="-10,0,0,0" />
+              </StackPanel>
+
+              <!-- 4 · Startup & notifications -->
+              <StackPanel Spacing="8" IsVisible="{Binding IsStartup}" MaxWidth="640" HorizontalAlignment="Left">
+                <StackPanel Spacing="4" Margin="0,0,0,8">
+                  <TextBlock Text="STARTUP &amp; ALERTS" Classes="kicker accent" />
+                  <TextBlock Text="Stay on watch." Classes="display h2" />
+                </StackPanel>
+                <Grid Classes="row" ColumnDefinitions="*,Auto">
+                  <StackPanel><TextBlock Classes="t" Text="Start with Windows" /><TextBlock Classes="d" Text="Recommended: UPS Hub can only protect the PC while it's running. Current user, no admin." /></StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding StartWithWindows}" IsEnabled="{Binding StartupSupported}" VerticalAlignment="Center" />
+                </Grid>
+                <Grid Classes="row" ColumnDefinitions="*,Auto">
+                  <StackPanel><TextBlock Classes="t" Text="Start minimized to tray" /><TextBlock Classes="d" Text="Open quietly in the notification area." /></StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding StartMinimized}" VerticalAlignment="Center" />
+                </Grid>
+                <Separator />
+                <Grid Classes="row" ColumnDefinitions="*,Auto">
+                  <StackPanel><TextBlock Classes="t" Text="Show notifications" /><TextBlock Classes="d" Text="Shutdown warnings always show." /></StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding Notifications}" VerticalAlignment="Center" />
+                </Grid>
+                <Grid Classes="row" ColumnDefinitions="*,Auto" IsEnabled="{Binding Notifications}">
+                  <StackPanel><TextBlock Classes="t" Text="Power events" /><TextBlock Classes="d" Text="On battery, low battery, power restored." /></StackPanel>
+                  <ToggleSwitch Grid.Column="1" IsChecked="{Binding NotifyPower}" VerticalAlignment="Center" />
+                </Grid>
+              </StackPanel>
+
+              <!-- 5 · Done -->
+              <StackPanel Spacing="14" IsVisible="{Binding IsDone}" MaxWidth="560" HorizontalAlignment="Left" Margin="0,30,0,0">
+                <Border Width="52" Height="52" CornerRadius="14" Background="{StaticResource StatusUpSoftBrush}" HorizontalAlignment="Left">
+                  <PathIcon Data="{StaticResource IconCheck}" Width="22" Height="22" Foreground="{StaticResource StatusUpBrush}" />
+                </Border>
+                <TextBlock Text="ALL SET" Classes="kicker accent" />
+                <TextBlock Text="UPS Hub is on watch." Classes="display" FontSize="30" />
+                <TextBlock Text="{Binding DoneSummary}" Classes="muted" FontSize="14" TextWrapping="Wrap" LineHeight="21" />
+                <Button Classes="primary" Content="Open the dashboard" Command="{Binding CloseCommand}" HorizontalAlignment="Left" Padding="18,10" Margin="0,10,0,0" />
+              </StackPanel>
+            </Panel>
+          </ScrollViewer>
+        </DockPanel>
+      </Grid>
+    </Border>
+  </Panel>
+</UserControl>

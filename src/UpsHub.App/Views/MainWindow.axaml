@@ -1,0 +1,115 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:UpsHub.App.ViewModels"
+        xmlns:v="using:UpsHub.App.Views"
+        x:Class="UpsHub.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="{Binding AppName}"
+        Icon="avares://UpsHub/Assets/upshub.ico"
+        Width="1180" Height="780" MinWidth="980" MinHeight="640"
+        WindowStartupLocation="CenterScreen">
+  <Window.DataTemplates>
+    <DataTemplate DataType="vm:DashboardViewModel"><v:DashboardView /></DataTemplate>
+    <DataTemplate DataType="vm:ServersViewModel"><v:ServersView /></DataTemplate>
+    <DataTemplate DataType="vm:ShutdownViewModel"><v:ShutdownView /></DataTemplate>
+    <DataTemplate DataType="vm:SettingsViewModel"><v:SettingsView /></DataTemplate>
+  </Window.DataTemplates>
+
+  <Grid ColumnDefinitions="232,*" RowDefinitions="52,*">
+    <!-- ===== Sidebar (full height) ===== -->
+    <Border Grid.RowSpan="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+      <Grid RowDefinitions="52,*,Auto">
+        <!-- brand: logo tile + name + kicker (AslanCore CLOUD) -->
+        <Border x:Name="BrandBar" Background="Transparent" Padding="16,10,12,0">
+          <StackPanel Orientation="Horizontal" Spacing="11" VerticalAlignment="Center">
+            <Border Classes="squircle" Width="34" Height="34" CornerRadius="7.65" BoxShadow="0 0 0 1 #26FF5C1A, 0 4 16 0 #33FF5C1A">
+              <Image Source="avares://UpsHub/Assets/logo-512.png" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+            </Border>
+            <StackPanel VerticalAlignment="Center" Spacing="1">
+              <TextBlock Text="{Binding AppName}" Classes="display" FontSize="16" />
+              <TextBlock Text="{Binding Tagline}" Classes="kicker" FontSize="9" LetterSpacing="2.2" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="1" Margin="10,22,10,0" Spacing="3">
+          <Button Classes="nav" Classes.active="{Binding IsDashboard}" Command="{Binding NavigateCommand}" CommandParameter="dashboard">
+            <StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource IconDashboard}" /><TextBlock Text="Dashboard" /></StackPanel>
+          </Button>
+          <Button Classes="nav" Classes.active="{Binding IsServers}" Command="{Binding NavigateCommand}" CommandParameter="servers">
+            <StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource IconServer}" /><TextBlock Text="Servers" /></StackPanel>
+          </Button>
+          <Button Classes="nav" Classes.active="{Binding IsShutdown}" Command="{Binding NavigateCommand}" CommandParameter="shutdown">
+            <StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource IconPower}" /><TextBlock Text="Shutdown rules" /></StackPanel>
+          </Button>
+          <Button Classes="nav" Classes.active="{Binding IsSettings}" Command="{Binding NavigateCommand}" CommandParameter="settings">
+            <StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource IconSettings}" /><TextBlock Text="Settings" /></StackPanel>
+          </Button>
+
+          <TextBlock Text="MONITORED UPS" Classes="kicker" Margin="10,26,0,8" IsVisible="{Binding !!SidebarUps.Count}" />
+          <ItemsControl ItemsSource="{Binding SidebarUps}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:SidebarUpsViewModel">
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="8,0,8,0" Height="40">
+                  <Border Width="26" Height="26" CornerRadius="6" Background="{StaticResource ElevatedBrush}" BoxShadow="{StaticResource ShadowBorder}">
+                    <PathIcon Data="{StaticResource IconPower}" Width="12" Height="12" Foreground="{StaticResource PrimaryBrush}" />
+                  </Border>
+                  <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Medium" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Host}" Classes="mono subtle" FontSize="10.5" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Value}" Classes="mono muted" FontSize="11" VerticalAlignment="Center" />
+                    <Ellipse Width="7" Height="7" Fill="{Binding Dot}" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <!-- footer live pill (Cloud "3 of 3 live") -->
+        <StackPanel Grid.Row="2" Margin="16,0,16,16" Spacing="10">
+          <Border Classes="pill" Background="{Binding FooterSoft}">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <Ellipse Classes="pulse" Width="6" Height="6" Fill="{Binding FooterBrush}" VerticalAlignment="Center" />
+              <TextBlock Text="{Binding FooterText}" Foreground="{Binding FooterBrush}" />
+            </StackPanel>
+          </Border>
+          <TextBlock Classes="kicker" FontSize="9" Text="{Binding Version}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ===== Title bar (custom chrome) ===== -->
+    <Border x:Name="TitleBar" Grid.Column="1" ZIndex="20" Background="Transparent" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="10" Margin="28,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+          <TextBlock Text="{Binding AppName}" FontSize="13" FontWeight="SemiBold" IsVisible="{Binding !ShowWizard}" />
+          <PathIcon Data="{StaticResource IconChevron}" Width="12" Height="12" Foreground="{StaticResource SubtleBrush}" IsVisible="{Binding !ShowWizard}" />
+          <TextBlock x:Name="Crumb" FontSize="13" Classes="muted" IsVisible="{Binding !ShowWizard}" />
+          <Border Classes="pill" Background="{StaticResource PrimarySoftBrush}" Padding="8,2" Margin="6,0,0,0" IsVisible="{Binding IsDemo}">
+            <TextBlock Text="DEMO · SIMULATED UPS" Classes="mono" FontSize="10" LetterSpacing="1.5" Foreground="{StaticResource PrimaryBrush}" />
+          </Border>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+          <Button Classes="caption" x:Name="MinButton" ToolTip.Tip="Minimize"><PathIcon Data="{StaticResource CapMin}" /></Button>
+          <Button Classes="caption" x:Name="MaxButton" ToolTip.Tip="Maximize"><PathIcon Data="{StaticResource CapMax}" /></Button>
+          <Button Classes="caption close" x:Name="CloseButton" ToolTip.Tip="Close to tray"><PathIcon Data="{StaticResource CapClose}" /></Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ===== Content ===== -->
+    <Grid Grid.Row="1" Grid.Column="1">
+      <TransitioningContentControl Content="{Binding CurrentPage}">
+        <TransitioningContentControl.PageTransition>
+          <CrossFade Duration="0:0:0.18" />
+        </TransitioningContentControl.PageTransition>
+      </TransitioningContentControl>
+    </Grid>
+
+    <!-- ===== Setup wizard: covers the window; the title bar (drag + caption buttons) stays on top ===== -->
+    <v:SetupWizardView Grid.RowSpan="2" Grid.ColumnSpan="2" ZIndex="10" DataContext="{Binding Wizard}" IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).ShowWizard}" />
+  </Grid>
+</Window>

@@ -1,0 +1,34 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="UpsHub.App.App"
+             RequestedThemeVariant="Dark"
+             Name="UPS Hub">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://UpsHub/Styles/Tokens.axaml" />
+        <ResourceInclude Source="avares://UpsHub/Styles/Icons.axaml" />
+        <ResourceInclude Source="avares://UpsHub/Styles/SharedTemplates.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <!-- Fluent overrides so stock controls pick up the AslanCore palette -->
+      <CornerRadius x:Key="ControlCornerRadius">10</CornerRadius>
+      <CornerRadius x:Key="OverlayCornerRadius">12</CornerRadius>
+      <FontFamily x:Key="ContentControlThemeFontFamily">avares://UpsHub/Assets/Fonts#IBM Plex Sans</FontFamily>
+    </ResourceDictionary>
+  </Application.Resources>
+  <Application.Styles>
+    <FluentTheme>
+      <FluentTheme.Palettes>
+        <ColorPaletteResources x:Key="Dark"
+                               Accent="#FF5C1A"
+                               AltHigh="#0A0908" AltLow="#0A0908" AltMedium="#0A0908" AltMediumHigh="#0A0908" AltMediumLow="#0A0908"
+                               BaseHigh="#F3F1EE" BaseLow="#2A2826" BaseMedium="#9A9690" BaseMediumHigh="#C9C5BF" BaseMediumLow="#6B6762"
+                               ChromeAltLow="#C9C5BF" ChromeBlackHigh="#000000" ChromeBlackLow="#C9C5BF" ChromeBlackMedium="#000000"
+                               ChromeBlackMediumLow="#000000" ChromeDisabledHigh="#2A2826" ChromeDisabledLow="#6B6762" ChromeGray="#9A9690"
+                               ChromeHigh="#3A3734" ChromeLow="#121110" ChromeMedium="#1A1917" ChromeMediumLow="#22201E"
+                               ChromeWhite="#F3F1EE" ListLow="#1A1917" ListMedium="#2A2826" RegionColor="#0A0908" ErrorText="#E24B3A" />
+      </FluentTheme.Palettes>
+    </FluentTheme>
+    <StyleInclude Source="avares://UpsHub/Styles/Theme.axaml" />
+  </Application.Styles>
+</Application>
