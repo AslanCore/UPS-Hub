@@ -2,7 +2,7 @@
 
 A Windows client for [Network UPS Tools](https://networkupstools.org/) (NUT). It watches your UPS and shuts the PC down cleanly before the battery runs out.
 
-[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) [![Latest release](https://img.shields.io/github/v/release/cyberwill01/UPS-Hub)](https://github.com/cyberwill01/UPS-Hub/releases/latest)
+[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) [![Latest release](https://img.shields.io/github/v/release/AslanCore/UPS-Hub)](https://github.com/AslanCore/UPS-Hub/releases/latest)
 
 Built it from scratch in C# (.NET 10 + Avalonia). 
 
@@ -20,7 +20,7 @@ Built it from scratch in C# (.NET 10 + Avalonia).
 
 ## Install
 
-Grab the latest build from [Releases](https://github.com/cyberwill01/UPS-Hub/releases). There's an installer (`UpsHub-Setup-x.y.z.exe`, per-user, no admin needed) or a portable zip. You need Windows 10 or 11, 64-bit.
+Grab the latest build from [Releases](https://github.com/AslanCore/UPS-Hub/releases). There's an installer (`UpsHub-Setup-x.y.z.exe`, per-user, no admin needed) or a portable zip. You need Windows 10 or 11, 64-bit.
 
 The builds aren't code-signed yet, so SmartScreen will probably warn you. Click "More info" and then "Run anyway". If you want to check the file first, compare its hash with `SHA256SUMS.txt` from the release:
 
@@ -34,7 +34,7 @@ On first start, a short setup wizard helps you connect to your NUT server. If yo
 
 ## Direct USB is experimental
 
-Reading a UPS directly over USB, without NUT, is a port of NUT's `usbhid-ups` driver. So far it's only been tested against an APC BX1200MI.  If you try it, please [open an issue](https://github.com/cyberwill01/UPS-Hub/issues) with your UPS model and whether it worked. Going through a NUT server is the tested path.
+Reading a UPS directly over USB, without NUT, is a port of NUT's `usbhid-ups` driver. So far it's only been tested against an APC BX1200MI.  If you try it, please [open an issue](https://github.com/AslanCore/UPS-Hub/issues) with your UPS model and whether it worked. Going through a NUT server is the tested path.
 
 ## Building
 
