@@ -115,7 +115,7 @@ public sealed class UpsHubService : IAsyncDisposable
         try { if (Platform.Startup.IsSupported) Platform.Startup.SetEnabled(Settings.General.StartWithWindows); } catch { }
         foreach (var m in _monitors.Values)
         {
-            m.PollInterval = TimeSpan.FromSeconds(Settings.General.PollIntervalSeconds);
+            m.PollInterval = PollFor(m.Config);
             m.PowerFactor = Settings.General.PowerFactor;
         }
         Changed?.Invoke();
@@ -128,8 +128,20 @@ public sealed class UpsHubService : IAsyncDisposable
         _snapshots.Clear();
         _lastConn.Clear();
         _owners.Clear();
-        var poll = TimeSpan.FromSeconds(Settings.General.PollIntervalSeconds);
         foreach (var s in Settings.Servers.Where(s => s.Enabled && (s.IsLocal || !string.IsNullOrWhiteSpace(s.Host))))
+        {
+            var m = CreateMonitor(s);
+            _monitors[s.Id] = m;
+            m.Start();
+        }
+        Changed?.Invoke();
+    }
+
+    public TimeSpan PollFor(ServerSettings s) => TimeSpan.FromSeconds(s.PollIntervalSeconds ?? Settings.General.PollIntervalSeconds);
+
+    private IUpsMonitor CreateMonitor(ServerSettings s)
+    {
+        var poll = PollFor(s);
         {
             IUpsMonitor m;
             if (s.IsLocal)
@@ -143,13 +155,63 @@ public sealed class UpsHubService : IAsyncDisposable
                 m = new ServerMonitor(s, pw, poll) { PowerFactor = Settings.General.PowerFactor };
             }
             var owner = m;
-            m.SnapshotUpdated += (a, snap) => Dispatcher.UIThread.Post(() => { _owners[a] = owner; OnSnapshot(a, snap); });
-            m.StatusChanged += st => Dispatcher.UIThread.Post(() => OnStatus(s, st));
-            _monitors[s.Id] = m;
+            m.SnapshotUpdated += (a, snap) => Dispatcher.UIThread.Post(() => { if (_monitors.GetValueOrDefault(s.Id) == owner) { _owners[a] = owner; OnSnapshot(a, snap); } });
+            m.StatusChanged += st => Dispatcher.UIThread.Post(() => { if (_monitors.GetValueOrDefault(s.Id) == owner) OnStatus(s, st); });
+            return m;
+        }
+    }
+
+    /// <summary>Stops and recreates one source's monitor (after an edit changed how it connects).</summary>
+    public void RestartMonitor(string id)
+    {
+        if (_monitors.Remove(id, out var old))
+        {
+            foreach (var a in _owners.Where(kv => kv.Value == old).Select(kv => kv.Key).ToList()) { _owners.Remove(a); _snapshots.Remove(a); }
+            _lastConn.Remove(id);
+            _ = old.DisposeAsync().AsTask();
+        }
+        var cfg = Settings.Servers.FirstOrDefault(x => x.Id == id);
+        if (cfg is not null && cfg.Enabled && (cfg.IsLocal || !string.IsNullOrWhiteSpace(cfg.Host)))
+        {
+            var m = CreateMonitor(cfg);
+            _monitors[id] = m;
             m.Start();
         }
         Changed?.Invoke();
     }
+
+    /// <summary>
+    /// Applies an edit from the edit dialog live: validates, saves, reconnects only when connection
+    /// parameters changed, otherwise just updates the poll interval and names. Returns the field errors.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> ApplyServerEdit(ServerEdit edit)
+    {
+        var errors = edit.Validate();
+        if (errors.Count > 0) return errors;
+        var cfg = Settings.Servers.FirstOrDefault(x => x.Id == edit.Id);
+        if (cfg is null) return new Dictionary<string, string> { ["Host"] = "This server was removed." };
+        var reconnect = edit.NeedsReconnect(cfg);
+        edit.ApplyTo(cfg, Settings, pw => Platform.Secrets.Protect(pw));
+        Save();
+        Shutdown.Rules = Settings.Shutdown;
+        if (reconnect || !_monitors.ContainsKey(cfg.Id)) RestartMonitor(cfg.Id);
+        else { _monitors[cfg.Id].PollInterval = PollFor(cfg); Changed?.Invoke(); }
+        EvaluateShutdown();
+        return errors;
+    }
+
+    public void RemoveServer(string id)
+    {
+        var cfg = Settings.Servers.FirstOrDefault(x => x.Id == id);
+        if (cfg is null) return;
+        Settings.Servers.Remove(cfg);
+        Save();
+        RestartMonitor(id);
+    }
+
+    /// <summary>Decrypted stored password, for "Test connection" with the password left unchanged.</summary>
+    public string? StoredPassword(string id) =>
+        Settings.Servers.FirstOrDefault(x => x.Id == id) is { } s ? Platform.Secrets.Unprotect(s.ProtectedPassword) : null;
 
     public UpsAddress? PrimaryAddress
     {
@@ -170,7 +232,8 @@ public sealed class UpsHubService : IAsyncDisposable
 
     /// <summary>Friendly name for notifications: "APC Back-UPS BK650M2-CH (USB)" or the NUT address.</summary>
     public string NameOf(UpsAddress a) =>
-        MonitorOf(a) is { Config: { IsLocal: true } c }
+        MonitorOf(a)?.Config.PrefsFor(a.Ups) is { DisplayName.Length: > 0 } p ? p.DisplayName
+        : MonitorOf(a) is { Config: { IsLocal: true } c }
             ? (string.IsNullOrWhiteSpace(c.DisplayName) ? LocalNames.DisplayName(c.Local!.Vendor, c.Local.Model) : c.DisplayName) + " (USB)"
             : a.ToString();
 
@@ -178,7 +241,8 @@ public sealed class UpsHubService : IAsyncDisposable
     {
         _snapshots[a] = snap;
         var ev = _powerEvents.Observe(a, snap);
-        if (ev != PowerEvent.None && Settings.General.NotifyOnPowerEvents)
+        var prefs = MonitorOf(a)?.Config.PrefsFor(a.Ups);
+        if (ev != PowerEvent.None && Settings.General.NotifyOnPowerEvents && prefs?.Notifications != false)
         {
             var name = NameOf(a);
             switch (ev)

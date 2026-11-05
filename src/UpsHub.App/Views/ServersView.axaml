@@ -3,6 +3,7 @@
              xmlns:vm="using:UpsHub.App.ViewModels"
              x:Class="UpsHub.App.Views.ServersView"
              x:DataType="vm:ServersViewModel">
+  <Panel>
   <ScrollViewer>
     <StackPanel Margin="28,24,28,28" Spacing="16" MaxWidth="1160">
       <StackPanel Spacing="4" Classes="stagger">
@@ -216,6 +217,7 @@
                     </Border>
                     <TextBlock Text="{Binding Message}" IsVisible="{Binding HasMessage}" Foreground="{StaticResource StatusDegradedBrush}" FontSize="12.5" TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Button Classes="ghost" Padding="12,7" FontSize="12.5" Content="Edit" Command="{Binding EditCommand}" />
                       <Button Classes="ghost" Padding="12,7" FontSize="12.5" Content="{Binding ReconnectLabel}" Command="{Binding ReconnectCommand}" />
                       <Button Classes="ghost danger" Padding="12,7" FontSize="12.5" Content="Remove" Command="{Binding RemoveCommand}" />
                     </StackPanel>
@@ -287,4 +289,103 @@
       </Grid>
     </StackPanel>
   </ScrollViewer>
+
+  <!-- ===== Edit dialog (modal overlay) ===== -->
+  <Border Background="#B30A0908" IsVisible="{Binding Editor, Converter={x:Static ObjectConverters.IsNotNull}}">
+    <ScrollViewer DataContext="{Binding Editor}" x:DataType="vm:ServerEditViewModel" VerticalAlignment="Center">
+      <Border Classes="card lg glow" Padding="26" Width="640" Margin="24" HorizontalAlignment="Center">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding Kicker}" Classes="kicker accent" />
+              <TextBlock Text="{Binding Title}" Classes="display h2" />
+            </StackPanel>
+            <Button Grid.Column="1" Classes="ghost" Padding="10,6" Content="Close" Command="{Binding CancelCommand}" VerticalAlignment="Top" />
+          </Grid>
+
+          <!-- danger confirmation -->
+          <Border Classes="panel" Padding="16" IsVisible="{Binding ConfirmRemove}" BorderBrush="{StaticResource StatusDownBrush}" BorderThickness="1">
+            <StackPanel Spacing="10">
+              <TextBlock Text="REMOVE THIS SOURCE?" Classes="kicker" Foreground="{StaticResource StatusDownBrush}" />
+              <TextBlock TextWrapping="Wrap" FontSize="13" Text="UPS Hub stops monitoring it right away. Shutdown rules that use one of its UPSes stop protecting this PC until you pick another primary UPS. The saved login is deleted." />
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Classes="dangerfill" Content="Remove for good" Command="{Binding RemoveCommand}" />
+                <Button Classes="ghost" Content="Keep it" Command="{Binding KeepServerCommand}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <StackPanel Spacing="14" IsVisible="{Binding !ConfirmRemove}">
+            <Grid ColumnDefinitions="*,10,110" RowDefinitions="Auto,Auto" IsVisible="{Binding IsNut}">
+              <TextBlock Text="Host or IP" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBlock Grid.Column="2" Text="Port" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBox Grid.Row="1" Classes="mono" Text="{Binding Host}" Watermark="192.0.2.20 or nas.local" />
+              <NumericUpDown Grid.Row="1" Grid.Column="2" MinWidth="0" Value="{Binding Port}" Minimum="1" Maximum="65535" FormatString="0" ShowButtonSpinner="False" />
+            </Grid>
+            <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto">
+              <TextBlock Text="Display name" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBlock Grid.Column="2" Text="Poll interval" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBox Grid.Row="1" Text="{Binding DisplayName}" Watermark="NAS" />
+              <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                <ToggleSwitch IsChecked="{Binding UsePollOverride}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                <NumericUpDown Value="{Binding PollSeconds}" Minimum="1" Maximum="300" FormatString="0 s" Width="110" IsEnabled="{Binding UsePollOverride}" />
+                <TextBlock Text="default" Classes="subtle" FontSize="12" VerticalAlignment="Center" IsVisible="{Binding !UsePollOverride}" />
+              </StackPanel>
+            </Grid>
+            <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto,Auto" IsVisible="{Binding IsNut}">
+              <TextBlock Text="Username" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBlock Grid.Column="2" Text="Password (stored with Windows DPAPI)" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBox Grid.Row="1" Text="{Binding Username}" Watermark="from upsd.users" />
+              <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Password}" PasswordChar="•" Watermark="{Binding PasswordWatermark}" IsEnabled="{Binding !ClearPassword}" />
+              <CheckBox Grid.Row="2" Grid.Column="2" Margin="0,6,0,0" FontSize="12" Content="Remove the saved password" IsChecked="{Binding ClearPassword}" IsVisible="{Binding HasStoredPassword}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto" IsVisible="{Binding IsNut}">
+              <TextBlock Text="Encryption" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <TextBlock Grid.Column="2" Text="Register as upsmon secondary" Classes="muted" FontSize="12" Margin="0,0,0,6" />
+              <ComboBox Grid.Row="1" ItemsSource="{Binding TlsModes}" SelectedIndex="{Binding TlsIndex}" />
+              <ToggleSwitch Grid.Row="1" Grid.Column="2" IsChecked="{Binding LoginAsSecondary}" VerticalAlignment="Center" />
+            </Grid>
+
+            <StackPanel Spacing="8" IsVisible="{Binding HasUps}">
+              <TextBlock Text="UPS ON THIS SOURCE" Classes="kicker" />
+              <ItemsControl ItemsSource="{Binding Ups}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:UpsEditItemViewModel">
+                    <Border Classes="panel" Padding="12,10">
+                      <Grid ColumnDefinitions="110,*,Auto" RowDefinitions="Auto,Auto">
+                        <TextBlock Text="{Binding Name}" Classes="mono" FontSize="13" VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" Text="{Binding DisplayName}" Watermark="display name (optional)" Margin="0,0,10,0" />
+                        <CheckBox Grid.Column="2" Content="Monitor" IsChecked="{Binding Monitored}" />
+                        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="18" Margin="0,8,0,0">
+                          <CheckBox Content="Powers this PC (primary)" FontSize="12" IsChecked="{Binding Primary}" />
+                          <CheckBox Content="Power notifications" FontSize="12" IsChecked="{Binding Notifications}" />
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+
+            <TextBlock Text="{Binding ErrorText}" IsVisible="{Binding HasError}" Foreground="{StaticResource StatusDownBrush}" FontSize="12.5" TextWrapping="Wrap" />
+            <Border Classes="panel" Padding="12,10" IsVisible="{Binding HasProbeResult}">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Ellipse Width="7" Height="7" VerticalAlignment="Top" Margin="0,6,0,0" Fill="{StaticResource StatusUpBrush}" IsVisible="{Binding ProbeOk}" />
+                <Ellipse Width="7" Height="7" VerticalAlignment="Top" Margin="0,6,0,0" Fill="{StaticResource StatusDownBrush}" IsVisible="{Binding !ProbeOk}" />
+                <TextBlock Text="{Binding ProbeResult}" TextWrapping="Wrap" FontSize="12.5" MaxWidth="520" HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+            <TextBlock Classes="subtle" FontSize="11.5" TextWrapping="Wrap" Text="Changes apply right away. Changing the address, login, encryption or UPS list reconnects this source." />
+            <Grid ColumnDefinitions="Auto,*,Auto,10,Auto">
+              <Button Classes="ghost danger" Content="Remove…" Command="{Binding AskRemoveCommand}" />
+              <Button Grid.Column="2" Classes="ghost" Content="Test connection" Command="{Binding TestCommand}" IsEnabled="{Binding !Busy}" IsVisible="{Binding IsNut}" />
+              <Button Grid.Column="4" Classes="primary" Content="Save changes" Command="{Binding SaveCommand}" />
+            </Grid>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </ScrollViewer>
+  </Border>
+  </Panel>
 </UserControl>

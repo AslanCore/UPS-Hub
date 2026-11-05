@@ -39,7 +39,7 @@ public partial class App : Application
                 ? Path.Combine(Path.GetTempPath(), "upshub-demo-" + Environment.ProcessId)
                 : SettingsStore.DefaultDirectory();
             var store = new SettingsStore(dir);
-            if (opt.Demo && opt.ScreenshotDir is null) SeedDemo(store);
+            if (opt.Demo && (opt.ScreenshotDir is null || opt.Shots050)) SeedDemo(store);
 
             _svc = new UpsHubService(store, platform) { IsDemo = opt.Demo };
             if (opt.Demo)
@@ -95,7 +95,8 @@ public partial class App : Application
             if (opt.ScreenshotDir is { } shots)
                 Dispatcher.UIThread.Post(async () =>
                 {
-                    if (opt.Phase4Shots) await ScreenshotRunner.RunPhase4Async(this, shots);
+                    if (opt.Shots050) await ScreenshotRunner.Run050Async(this, shots);
+                    else if (opt.Phase4Shots) await ScreenshotRunner.RunPhase4Async(this, shots);
                     else if (opt.LocalShots) await ScreenshotRunner.RunLocalAsync(this, shots);
                     else if (opt.DiscoveryShots) await ScreenshotRunner.RunDiscoveryAsync(this, shots);
                     else await ScreenshotRunner.RunAsync(this, shots);
@@ -113,6 +114,7 @@ public partial class App : Application
         store.Save(s);
     }
 
+    internal FakeNutServer? DemoServer => _demoServer;
     internal FakeNutServer StartDemoServer()
     {
         _demoServer ??= new FakeNutServer()

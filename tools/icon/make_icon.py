@@ -207,8 +207,59 @@ def main(out):
     for s, im in zip(sizes, imgs):
         if s in (32, 64, 256): im.save(os.path.join(out, f"icon-{s}.png"))
     render(512, simplified=False).save(os.path.join(out, "icon-512.png"))
+    main_tray(out)
+
+# ---- Tray v2 (0.5.0) -----------------------------------------------------------------------------
+# Drawn per size on the pixel grid (no plate, no hexagon, no margin) so the glyph fills the 16/20/24/32 px
+# notification-area frame edge to edge like the built-in Windows icons. Integer rectangles only at the small
+# sizes, hand-tuned per size; a 1 px dark outline keeps it readable on light and dark taskbars.
+TRAY_LAYOUT = {
+    #  px: (body_x0, body_x1, nub_w, nub_h, body_y0, outline, bars, bar_gap, dot_d)
+    16: (1, 11, 4, 2, 2, 1, 2, 1, 8),
+    20: (1, 14, 5, 2, 2, 1, 3, 1, 10),
+    24: (1, 16, 6, 3, 3, 1, 3, 1, 12),
+    32: (2, 22, 8, 3, 4, 2, 3, 2, 15),
+    48: (3, 33, 12, 4, 5, 2, 4, 2, 22),
+}
+
+def tray_icon(px, dot):
+    bx0, bx1, nw, nh, by0, ol, bars, gap, dd = TRAY_LAYOUT[px]
+    by1 = px - 1                      # body reaches the bottom edge
+    im = Image.new("RGBA", (px, px), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    dark = BG + (255,)
+    cx = (bx0 + bx1) / 2
+    n0 = int(round(cx - nw / 2)); n1 = n0 + nw - 1
+    # dark outline silhouette (body + nub), then the cream body inside it
+    d.rectangle([n0 - ol, by0 - nh - ol + 1 if by0 - nh - ol + 1 >= 0 else 0, n1 + ol, by0], fill=dark)
+    d.rectangle([bx0 - ol if bx0 - ol >= 0 else 0, by0 - ol + 1, bx1 + ol, by1], fill=dark)
+    d.rectangle([n0, max(0, by0 - nh + 1), n1, by0], fill=CREAM + (255,))
+    d.rectangle([bx0, by0 + 1, bx1, by1 - ol], fill=CREAM + (255,))
+    # charge bars: dark well with orange bars, so the battery reads as a battery even at 16 px
+    w = ol + 1
+    wx0, wx1, wy0, wy1 = bx0 + w, bx1 - w, by0 + 1 + w, by1 - ol - w
+    d.rectangle([wx0, wy0, wx1, wy1], fill=dark)
+    inner_h = wy1 - wy0 + 1 - 2 * gap
+    bh = max(1, (inner_h - gap * (bars - 1)) // bars)
+    y = wy1 - gap
+    for i in range(bars):
+        d.rectangle([wx0 + gap, y - bh + 1, wx1 - gap, y], fill=ORANGE + (255,))
+        y -= bh + gap
+    # status dot in the bottom-right corner, touching both edges, with a dark cut-out ring
+    if dot is not None:
+        S = px * 8                      # supersample only the round dot
+        m = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+        md = ImageDraw.Draw(m)
+        r_out = dd * 8 / 2; c = S - r_out
+        md.ellipse([c - r_out, c - r_out, S - 1, S - 1], fill=dark)
+        r_in = r_out - max(1, ol) * 8 - (4 if px <= 20 else 0)
+        md.ellipse([c - r_in, c - r_in, c + r_in, c + r_in], fill=dot + (255,))
+        im.alpha_composite(m.resize((px, px), Image.LANCZOS))
+    return im
+
+def main_tray(out):
     for name, rgb in STATUS.items():
-        t = [render(s, dot=rgb) for s in (16, 20, 24, 32, 48)]
+        t = [tray_icon(s, rgb) for s in (16, 20, 24, 32, 48)]
         t[-1].save(os.path.join(out, f"tray-{name}.ico"), format="ICO", sizes=[im.size for im in t],
                    append_images=t[:-1], bitmap_format="png")
         t[3].save(os.path.join(out, f"tray-{name}-32.png"))

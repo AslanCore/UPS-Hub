@@ -260,7 +260,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
     {
         var st = _svc.Monitors.Select(m => m.Status).FirstOrDefault(s => s.Message is not null);
         if (st?.Message is { } msg)
-            return st.State == ConnectionState.Reconnecting ? $"{msg} {ConnectionText.Describe(st, DateTimeOffset.UtcNow)}." : msg;
+            return st.State == ConnectionState.Reconnecting ? $"{msg.TrimEnd('.')}. {ConnectionText.Describe(st, DateTimeOffset.UtcNow)}." : msg;
         return "Waiting for the first reading…";
     }
 

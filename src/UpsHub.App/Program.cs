@@ -40,6 +40,7 @@ public sealed record AppOptions
     public bool LocalShots { get; init; }
     /// <summary>With --screenshots: capture the 0.4 screens (updates, About, setup wizard, shutdown test).</summary>
     public bool Phase4Shots { get; init; }
+    public bool Shots050 { get; init; }
     /// <summary>Demo: open the setup wizard (with a stand-in WinNUT import).</summary>
     public bool Wizard { get; init; }
 
@@ -55,6 +56,7 @@ public sealed record AppOptions
                 case "--screenshots" when i + 1 < args.Length: o = o with { ScreenshotDir = args[++i], Demo = true }; break;
                 case "--screenshots-local" when i + 1 < args.Length: o = o with { ScreenshotDir = args[++i], Demo = true, LocalShots = true }; break;
                 case "--wizard": o = o with { Wizard = true, Demo = true }; break;
+                case "--screenshots-050" when i + 1 < args.Length: o = o with { ScreenshotDir = args[++i], Demo = true, Shots050 = true }; break;
                 case "--screenshots-phase4" when i + 1 < args.Length: o = o with { ScreenshotDir = args[++i], Demo = true, Phase4Shots = true }; break;
                 case "--screenshots-discovery" when i + 1 < args.Length: o = o with { ScreenshotDir = args[++i], Demo = true, DiscoveryShots = true }; break;
             }

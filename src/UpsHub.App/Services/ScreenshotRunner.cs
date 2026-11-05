@@ -393,6 +393,82 @@ internal static class ScreenshotRunner
         }
     }
 
+    /// <summary>`--screenshots-050 DIR`: edit dialog, remove confirmation, reconnect states, new tray icons.</summary>
+    public static async Task Run050Async(App app, string dir)
+    {
+        Directory.CreateDirectory(dir);
+        var w = app.MainWindowInstance;
+        var vm = app.ViewModel;
+        var svc = app.Service;
+        var log = new System.Text.StringBuilder();
+        try
+        {
+            w.Width = 1180; w.Height = 900;
+            svc.Settings.Discovery.FirstRunPromptDone = true;
+            svc.Settings.General.PollIntervalSeconds = 1;
+            svc.Save();
+            await Task.Delay(2500);
+            vm.Navigate("servers");
+            await Task.Delay(800);
+            Save(w, dir, "050-01-servers-cards-with-edit");
+            app.DemoServer?.Add(new UpsHub.FakeNut.FakeUps("rack", "Rack UPS").Set("ups.status", "OL").Set("battery.charge", "100"));
+            svc.Monitors.First().Kick(reconnect: true);
+            await Task.Delay(1500);
+            svc.Settings.Shutdown.PrimaryUps = $"apc@127.0.0.1:{app.DemoServer?.Port}";
+            var item = vm.Servers.Servers.First(s => !s.IsLocal);
+            item.EditCommand.Execute(null);
+            await Task.Delay(800);
+            Save(w, dir, "050-02-edit-server-dialog");
+            var ed = vm.Servers.Editor!;
+            ed.Host = "bad host"; ed.Port = 0;
+            ed.SaveCommand.Execute(null);
+            await Task.Delay(500);
+            Save(w, dir, "050-03-edit-validation");
+            ed.Host = item.Config.Host; ed.Port = item.Config.Port; ed.HasError = false;
+            await ed.TestCommand.ExecuteAsync(null);
+            await Task.Delay(500);
+            Save(w, dir, "050-04-edit-test-connection");
+            ed.AskRemoveCommand.Execute(null);
+            await Task.Delay(500);
+            Save(w, dir, "050-05-remove-confirmation");
+            ed.CancelCommand.Execute(null);
+            await Task.Delay(400);
+
+            // Server goes quiet: reconnect with attempt count and countdown.
+            if (app.DemoServer is { } srv)
+            {
+                srv.Frozen = true;
+                await Task.Delay(1000);
+                await WaitFor(() => svc.Monitors.First().Status is { State: Core.Monitoring.ConnectionState.Reconnecting, NextRetry: not null, Attempt: >= 2 }, 20000);
+                vm.Servers.Refresh();
+                item = vm.Servers.Servers.First(s => !s.IsLocal);
+                Save(w, dir, "050-06-servers-reconnecting");
+                log.AppendLine("servers status=" + item.StatusText);
+                vm.Navigate("dashboard");
+                await Task.Delay(300);
+                await WaitFor(() => svc.Monitors.First().Status is { State: Core.Monitoring.ConnectionState.Reconnecting, NextRetry: not null }, 20000);
+                vm.Dashboard.Refresh();
+                Save(w, dir, "050-07-dashboard-reconnecting");
+                log.AppendLine("dashboard subtitle=" + vm.Dashboard.Subtitle + " showReconnect=" + vm.Dashboard.ShowReconnect);
+                srv.Frozen = false;
+                vm.Dashboard.ReconnectCommand.Execute(null);
+                await Task.Delay(2500);
+                Save(w, dir, "050-08-dashboard-after-reconnect-now");
+                log.AppendLine("after reconnect: " + vm.Dashboard.PillText);
+            }
+            app.Tray?.SaveIcons(dir);
+            File.WriteAllText(Path.Combine(dir, "run.txt"), log.ToString());
+        }
+        catch (Exception ex) { File.WriteAllText(Path.Combine(dir, "error.txt"), log + "\n" + ex); }
+        finally { app.Quit(); }
+    }
+
+    private static async Task WaitFor(Func<bool> cond, int ms)
+    {
+        var end = DateTime.UtcNow.AddMilliseconds(ms);
+        while (DateTime.UtcNow < end && !cond()) await Task.Delay(50);
+    }
+
     private static void Save(Window w, string dir, string name)
     {
         if (!w.IsVisible) return;

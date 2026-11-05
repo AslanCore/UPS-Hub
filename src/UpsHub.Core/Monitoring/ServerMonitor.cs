@@ -147,7 +147,8 @@ public sealed class ServerMonitor : IUpsMonitor
                 var all = await client.ListUpsAsync(act).ConfigureAwait(false);
                 KnownUps = all;
                 UpsListChanged?.Invoke(all);
-                var names = _cfg.UpsNames.Count > 0 ? _cfg.UpsNames.ToList() : all.Select(u => u.Name).ToList();
+                var names = (_cfg.UpsNames.Count > 0 ? _cfg.UpsNames.ToList() : all.Select(u => u.Name).ToList())
+                    .Where(_cfg.IsMonitored).ToList();
                 if (_cfg.LoginAsSecondary)
                     foreach (var n in names) await client.LoginAsync(n, act).ConfigureAwait(false);
 

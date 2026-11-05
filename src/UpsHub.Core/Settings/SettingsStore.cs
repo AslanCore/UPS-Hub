@@ -71,6 +71,8 @@ public sealed class SettingsStore
         foreach (var srv in s.Servers)
         {
             srv.UpsNames ??= new();
+            srv.UpsPrefs ??= new();
+            if (srv.PollIntervalSeconds is { } pi) srv.PollIntervalSeconds = Math.Clamp(pi, 1, 300);
             if (srv.Kind == UpsSourceKind.Local) { srv.Local ??= new(); srv.Local.DeviceKey ??= ""; if (string.IsNullOrWhiteSpace(srv.Host)) srv.Host = LocalHost; }
             if (srv.Port is <= 0 or > 65535) srv.Port = 3493;
             if (string.IsNullOrWhiteSpace(srv.Id)) srv.Id = Guid.NewGuid().ToString("N");

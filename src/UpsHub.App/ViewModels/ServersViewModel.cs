@@ -37,7 +37,8 @@ public sealed partial class ServerItemViewModel : ViewModelBase
     [ObservableProperty] private string? _message;
     [ObservableProperty] private bool _hasMessage;
 
-    [RelayCommand] private void Remove() => Owner.RemoveServer(this);
+    [RelayCommand] private void Remove() => Owner.Edit(this, confirmRemove: true);
+    [RelayCommand] private void Edit() => Owner.Edit(this);
     [RelayCommand] private void Reconnect() => Owner.Reconnect(this);
 }
 
@@ -128,11 +129,25 @@ public sealed partial class ServersViewModel : ViewModelBase
         Discovery.RefreshAdded();
     }
 
+    [ObservableProperty] private ServerEditViewModel? _editor;
+
+    /// <summary>Opens the edit dialog (Remove opens it on the danger confirmation).</summary>
+    public void Edit(ServerItemViewModel item, bool confirmRemove = false)
+    {
+        Editor = new ServerEditViewModel(_svc, item.Config, CloseEditor) { ConfirmRemove = confirmRemove };
+    }
+
+    private void CloseEditor()
+    {
+        Editor = null;
+        Rebuild();
+        Discovery.RefreshAdded();
+        Local.RefreshAdded();
+    }
+
     public void RemoveServer(ServerItemViewModel item)
     {
-        _svc.Settings.Servers.Remove(item.Config);
-        _svc.Save();
-        _svc.RebuildMonitors();
+        _svc.RemoveServer(item.Config.Id);
         Rebuild();
         Discovery.RefreshAdded();
         Local.RefreshAdded();

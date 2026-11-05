@@ -9,7 +9,7 @@
     <AppTagline>by AslanCore</AppTagline>
     <AppId>AslanCore.UpsHub</AppId>
     <AppRepoUrl>https://github.com/AslanCore/UPS-Hub</AppRepoUrl>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
 
     <Product>$(AppDisplayName)</Product>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>

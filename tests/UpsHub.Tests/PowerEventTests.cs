@@ -51,3 +51,18 @@ public class PowerEventTests
         Assert.Equal("Connected", ConnectionText.Describe(st with { State = ConnectionState.Connected }, now));
     }
 }
+
+public class TrayIconAssetTests
+{
+    [Theory]
+    [InlineData("up")] [InlineData("primary")] [InlineData("down")] [InlineData("degraded")] [InlineData("subtle")]
+    public void Tray_ico_has_every_small_size(string name)
+    {
+        var dir = AppContext.BaseDirectory;
+        while (dir is not null && !File.Exists(Path.Combine(dir, "Directory.Build.props"))) dir = Path.GetDirectoryName(dir);
+        var bytes = File.ReadAllBytes(Path.Combine(dir!, "src/UpsHub.App/Assets/Tray", $"tray-{name}.ico"));
+        int count = BitConverter.ToUInt16(bytes, 4);
+        var sizes = Enumerable.Range(0, count).Select(i => bytes[6 + i * 16] == 0 ? 256 : bytes[6 + i * 16]).OrderBy(x => x).ToArray();
+        Assert.Equal(new[] { 16, 20, 24, 32, 48 }, sizes);
+    }
+}

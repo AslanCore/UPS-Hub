@@ -51,7 +51,22 @@ public sealed class ServerSettings
     /// <summary>Nut = a upsd server (Host/Port). Local = a UPS plugged into this PC (see <see cref="Local"/>).</summary>
     public UpsSourceKind Kind { get; set; } = UpsSourceKind.Nut;
     public LocalDeviceSettings? Local { get; set; }
+    /// <summary>Poll interval for this source in seconds; null = the global setting.</summary>
+    public int? PollIntervalSeconds { get; set; }
+    /// <summary>Per-UPS preferences (display name, monitored, notifications). Missing entry = defaults.</summary>
+    public List<UpsPrefs> UpsPrefs { get; set; } = new();
     [JsonIgnore] public bool IsLocal => Kind == UpsSourceKind.Local;
+
+    public UpsPrefs? PrefsFor(string ups) => UpsPrefs.FirstOrDefault(p => string.Equals(p.Name, ups, StringComparison.OrdinalIgnoreCase));
+    public bool IsMonitored(string ups) => PrefsFor(ups)?.Monitored ?? true;
+}
+
+public sealed class UpsPrefs
+{
+    public string Name { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public bool Monitored { get; set; } = true;
+    public bool Notifications { get; set; } = true;
 }
 
 public sealed class ShutdownRules
