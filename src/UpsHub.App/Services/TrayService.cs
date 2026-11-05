@@ -17,20 +17,24 @@ public sealed class TrayService : IDisposable
     private readonly Dictionary<UpsHealth, WindowIcon> _icons = new();
     private UpsHealth? _shown;
 
-    public TrayService(Application app, Action open, Action testCountdown, Action quit)
+    private readonly NativeMenuItem _reconnect;
+
+    public TrayService(Application app, Action open, Action testCountdown, Action quit, Action? reconnect = null)
     {
         _status = new NativeMenuItem("Connecting…") { IsEnabled = false };
         var openItem = new NativeMenuItem("Open " + AppInfo.DisplayName);
         openItem.Click += (_, _) => open();
         var testItem = new NativeMenuItem("Test shutdown…");
         testItem.Click += (_, _) => testCountdown();
+        _reconnect = new NativeMenuItem("Reconnect now");
+        _reconnect.Click += (_, _) => reconnect?.Invoke();
         var quitItem = new NativeMenuItem("Quit");
         quitItem.Click += (_, _) => quit();
         _tray = new TrayIcon
         {
             ToolTipText = AppInfo.DisplayName,
             Icon = IconFor(UpsHealth.Unknown),
-            Menu = new NativeMenu { Items = { openItem, _status, new NativeMenuItemSeparator(), testItem, new NativeMenuItemSeparator(), quitItem } },
+            Menu = new NativeMenu { Items = { openItem, _status, _reconnect, new NativeMenuItemSeparator(), testItem, new NativeMenuItemSeparator(), quitItem } },
             IsVisible = true,
         };
         _tray.Clicked += (_, _) => open();

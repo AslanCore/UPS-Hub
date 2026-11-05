@@ -167,7 +167,7 @@ public sealed class LocalUpsMonitor : IUpsMonitor
     public void Kick(bool reconnect = false)
     {
         if (reconnect) { _reopen = true; _backoff.Reset(); }
-        _wake.Release();
+        if (_wake.CurrentCount == 0) _wake.Release();
     }
 
     public async Task StopAsync()
@@ -214,7 +214,7 @@ public sealed class LocalUpsMonitor : IUpsMonitor
                 }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex)   // includes device-read timeouts surfacing as OperationCanceledException
             {
                 var delay = _backoff.Next();
                 SetStatus(new ServerStatus(Config.Id, ConnectionState.Reconnecting, Describe(ex), Status.ServerVersion, false,

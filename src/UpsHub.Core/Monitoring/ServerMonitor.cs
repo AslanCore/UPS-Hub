@@ -32,6 +32,7 @@ public sealed class ServerMonitor : IUpsMonitor
     private CancellationTokenSource? _cts;
     private Task? _loop;
     private volatile bool _forceReconnect;
+    private CancellationTokenSource? _attemptCts;
 
     public TimeSpan PollInterval { get; set; }
     public double PowerFactor { get; set; } = 0.6;
@@ -59,14 +60,24 @@ public sealed class ServerMonitor : IUpsMonitor
     {
         if (_loop is not null) return;
         _cts = new CancellationTokenSource();
-        _loop = Task.Run(() => RunAsync(_cts.Token));
+        var ct = _cts.Token;
+        _loop = Task.Run(() => SuperviseAsync(ct));
     }
 
-    /// <summary>Poll now. With <paramref name="reconnect"/>, drop the socket first (use after resume from sleep).</summary>
+    /// <summary>
+    /// Poll now. With <paramref name="reconnect"/> (Reconnect button, resume from sleep) the current attempt is
+    /// abandoned on the spot: a pending backoff wait, a hanging connect or a stuck command is cancelled, the
+    /// backoff resets and a fresh connection starts immediately.
+    /// </summary>
     public void Kick(bool reconnect = false)
     {
-        if (reconnect) { _forceReconnect = true; _backoff.Reset(); }
-        _wake.Release();
+        if (reconnect)
+        {
+            _forceReconnect = true;
+            _backoff.Reset();
+            try { Volatile.Read(ref _attemptCts)?.Cancel(); } catch (ObjectDisposedException) { }
+        }
+        if (_wake.CurrentCount == 0) _wake.Release();   // one pending wake is enough; don't pile them up
     }
 
     public async Task StopAsync()
@@ -88,11 +99,37 @@ public sealed class ServerMonitor : IUpsMonitor
         CommandTimeout = TimeSpan.FromSeconds(Math.Clamp(PollInterval.TotalSeconds * 2, 3, 10)),
     };
 
+    /// <summary>
+    /// Last line of defence: if the loop ever throws something unexpected it is restarted, so a monitor can
+    /// never end up dead with a frozen "Reconnecting" status (the 0.4 "gives up" bug).
+    /// </summary>
+    private async Task SuperviseAsync(CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            try { await RunAsync(ct).ConfigureAwait(false); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
+            catch (Exception ex)
+            {
+                var delay = _backoff.Next();
+                SetStatus(new ServerStatus(_cfg.Id, ConnectionState.Reconnecting, ex.Message, Status.ServerVersion, false,
+                    _backoff.Attempt, _time.GetUtcNow() + delay));
+                try { await WaitAsync(delay, ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
+            }
+        }
+    }
+
     private async Task RunAsync(CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
         {
-            var client = _clientFactory(Options());
+            // One token per attempt: Kick(reconnect) cancels it to abandon whatever this attempt is waiting on.
+            using var attempt = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            Volatile.Write(ref _attemptCts, attempt);
+            if (_forceReconnect) { _forceReconnect = false; }
+            var act = attempt.Token;
+            var client = _clientFactory(Options());   // new client = fresh DNS lookup every attempt
             try
             {
                 SetStatus(Status with
@@ -100,43 +137,51 @@ public sealed class ServerMonitor : IUpsMonitor
                     State = _backoff.Attempt == 0 ? ConnectionState.Connecting : ConnectionState.Reconnecting,
                     NextRetry = null,
                 });
-                await client.ConnectAsync(ct).ConfigureAwait(false);
+                await client.ConnectAsync(act).ConfigureAwait(false);
                 string? version = null;
-                try { version = await client.GetServerVersionAsync(ct).ConfigureAwait(false); }
+                try { version = await client.GetServerVersionAsync(act).ConfigureAwait(false); }
                 catch (NutException) { /* very old upsd */ }
 
-                await client.AuthenticateAsync(_cfg.Username, _password, ct).ConfigureAwait(false);
+                await client.AuthenticateAsync(_cfg.Username, _password, act).ConfigureAwait(false);
 
-                var all = await client.ListUpsAsync(ct).ConfigureAwait(false);
+                var all = await client.ListUpsAsync(act).ConfigureAwait(false);
                 KnownUps = all;
                 UpsListChanged?.Invoke(all);
                 var names = _cfg.UpsNames.Count > 0 ? _cfg.UpsNames.ToList() : all.Select(u => u.Name).ToList();
                 if (_cfg.LoginAsSecondary)
-                    foreach (var n in names) await client.LoginAsync(n, ct).ConfigureAwait(false);
+                    foreach (var n in names) await client.LoginAsync(n, act).ConfigureAwait(false);
 
                 _backoff.Reset();
-                _forceReconnect = false;
                 SetStatus(new ServerStatus(_cfg.Id, ConnectionState.Connected,
                     names.Count == 0 ? "Connected, but the server lists no UPS" : null, version, client.IsTls));
 
-                await PollLoopAsync(client, names, ct).ConfigureAwait(false);
+                await PollLoopAsync(client, names, act).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
-            catch (Exception ex) when (ex is NutConnectionException or NutException or IOException or System.Security.Authentication.AuthenticationException)
+            catch (OperationCanceledException) when (act.IsCancellationRequested)
             {
+                // Manual reconnect / resume: go again right away, no backoff.
+            }
+            catch (Exception ex)
+            {
+                // Anything else (socket, DNS, TLS, timeout, protocol, ...) is a failed attempt: retry forever.
                 MarkAllStale();
                 var delay = _backoff.Next();
                 var nutErr = (ex as NutException)?.Error;
                 var msg = ex is NutException ne ? NutErrorParser.Describe(ne.Error) : ex.Message;
                 SetStatus(new ServerStatus(_cfg.Id, ConnectionState.Reconnecting, msg, Status.ServerVersion, false,
                     _backoff.Attempt, _time.GetUtcNow() + delay, nutErr));
-                await WaitAsync(delay, ct).ConfigureAwait(false);
+                try { await WaitAsync(delay, act).ConfigureAwait(false); }
+                catch (OperationCanceledException) when (!ct.IsCancellationRequested) { /* kicked: retry now */ }
             }
             finally
             {
-                await client.DisposeAsync().ConfigureAwait(false);
+                Volatile.Write(ref _attemptCts, null);
+                // Never let closing a dead socket kill the loop (LOGOUT on a hung upsd used to throw out of here).
+                try { await client.DisposeAsync().ConfigureAwait(false); } catch { }
             }
         }
+        ct.ThrowIfCancellationRequested();
     }
 
     private async Task PollLoopAsync(NutClient client, List<string> names, CancellationToken ct)

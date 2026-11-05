@@ -138,8 +138,11 @@ public sealed partial class ServersViewModel : ViewModelBase
         Local.RefreshAdded();
     }
 
-    public void Reconnect(ServerItemViewModel item) =>
-        _svc.Monitors.FirstOrDefault(m => m.Config.Id == item.Config.Id)?.Kick(reconnect: true);
+    public void Reconnect(ServerItemViewModel item)
+    {
+        _svc.Reconnect(item.Config.Id);
+        Refresh();
+    }
 
     public void Rebuild()
     {
@@ -164,7 +167,7 @@ public sealed partial class ServersViewModel : ViewModelBase
             {
                 ConnectionState.Connected => ("Connected", Palette.Up),
                 ConnectionState.Connecting => ("Connecting", Palette.Degraded),
-                ConnectionState.Reconnecting => (st.NextRetry is { } nr ? $"Retry in {Math.Max(0, (nr - DateTimeOffset.UtcNow).TotalSeconds):0}s" : "Reconnecting", Palette.Degraded),
+                ConnectionState.Reconnecting => (ConnectionText.Describe(st, DateTimeOffset.UtcNow), Palette.Degraded),
                 _ => (item.Config.Enabled ? "Stopped" : "Disabled", Palette.Subtle),
             };
             item.StatusText = text;

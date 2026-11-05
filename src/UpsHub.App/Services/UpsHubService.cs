@@ -23,7 +23,8 @@ public sealed class UpsHubService : IAsyncDisposable
     /// <summary>Which monitor publishes each UPS address (so "connected" is exact for USB and NUT alike).</summary>
     private readonly Dictionary<UpsAddress, IUpsMonitor> _owners = new();
     private readonly Dictionary<UpsAddress, UpsSnapshot> _snapshots = new();
-    private readonly Dictionary<UpsAddress, UpsHealth> _lastHealth = new();
+    private readonly PowerEventDetector _powerEvents = new();
+    private readonly HashSet<string> _lostNotified = new();
     private readonly Dictionary<string, ConnectionState> _lastConn = new();
     private readonly DispatcherTimer _timer;
     private DateTimeOffset _quietUntil = DateTimeOffset.MinValue;
@@ -125,7 +126,6 @@ public sealed class UpsHubService : IAsyncDisposable
         foreach (var m in _monitors.Values) _ = m.DisposeAsync().AsTask();
         _monitors.Clear();
         _snapshots.Clear();
-        _lastHealth.Clear();
         _lastConn.Clear();
         _owners.Clear();
         var poll = TimeSpan.FromSeconds(Settings.General.PollIntervalSeconds);
@@ -177,19 +177,16 @@ public sealed class UpsHubService : IAsyncDisposable
     internal void OnSnapshot(UpsAddress a, UpsSnapshot snap)
     {
         _snapshots[a] = snap;
-        var health = snap.Health;
-        var prev = _lastHealth.GetValueOrDefault(a, UpsHealth.Unknown);
-        _lastHealth[a] = health;
-        if (health != prev && prev != UpsHealth.Unknown && Settings.General.NotifyOnPowerEvents)
+        var ev = _powerEvents.Observe(a, snap);
+        if (ev != PowerEvent.None && Settings.General.NotifyOnPowerEvents)
         {
             var name = NameOf(a);
-            switch (health)
+            switch (ev)
             {
-                case UpsHealth.OnBattery: Notify("On battery", $"{name} lost mains power. {Describe(snap)}", NotificationKind.Warning); break;
-                case UpsHealth.LowBattery: Notify("Low battery", $"{name} reports low battery. {Describe(snap)}", NotificationKind.Critical); break;
-                case UpsHealth.ForcedShutdown: Notify("Forced shutdown", $"{name}: the NUT server ordered a shutdown (FSD).", NotificationKind.Critical); break;
-                case UpsHealth.Online when prev is UpsHealth.OnBattery or UpsHealth.LowBattery:
-                    Notify("Power restored", $"{name} is back on mains power.", NotificationKind.Success); break;
+                case PowerEvent.OnBattery: Notify("On battery", $"{name} lost mains power. {Describe(snap)}", NotificationKind.Warning); break;
+                case PowerEvent.LowBattery: Notify("Low battery", $"{name} reports low battery. {Describe(snap)}", NotificationKind.Critical); break;
+                case PowerEvent.ForcedShutdown: Notify("Forced shutdown", $"{name}: the NUT server ordered a shutdown (FSD).", NotificationKind.Critical); break;
+                case PowerEvent.PowerRestored: Notify("Power restored", $"{name} is back on mains power.", NotificationKind.Success); break;
             }
         }
         SnapshotArrived?.Invoke(a, snap);
@@ -215,10 +212,13 @@ public sealed class UpsHubService : IAsyncDisposable
             var label = !string.IsNullOrWhiteSpace(s.DisplayName) ? s.DisplayName
                 : s.IsLocal ? $"the USB UPS ({LocalNames.DisplayName(s.Local!.Vendor, s.Local.Model)})" : s.Host;
             if (prev == ConnectionState.Connected && st.State == ConnectionState.Reconnecting)
+            {
+                _lostNotified.Add(s.Id);
                 Notify("Connection lost", s.IsLocal
                     ? $"Lost contact with {label}. Check the USB cable; retrying automatically."
                     : $"Lost contact with {label}. Retrying automatically.", NotificationKind.Warning);
-            else if (prev == ConnectionState.Reconnecting && st.State == ConnectionState.Connected)
+            }
+            else if (st.State == ConnectionState.Connected && _lostNotified.Remove(s.Id))
                 Notify("Reconnected", $"Back in contact with {label}.", NotificationKind.Success);
         }
         EvaluateShutdown();
@@ -262,6 +262,34 @@ public sealed class UpsHubService : IAsyncDisposable
         if (old.Phase == ShutdownPhase.CountingDown && now.Phase == ShutdownPhase.Idle && now.LastCancelReason == "Power restored")
             Notify("Shutdown cancelled", "Power restored.", NotificationKind.Success);
         ShutdownStateChanged?.Invoke(now);
+    }
+
+    /// <summary>
+    /// Reconnect button (dashboard, tray, servers page): drops any pending backoff and connects again now.
+    /// A monitor that is stopped (or missing) is started again.
+    /// </summary>
+    public bool Reconnect(string serverId)
+    {
+        if (!_monitors.TryGetValue(serverId, out var m))
+        {
+            var cfg = Settings.Servers.FirstOrDefault(s => s.Id == serverId);
+            if (cfg is null || !cfg.Enabled) return false;
+            RebuildMonitors();
+            return _monitors.ContainsKey(serverId);
+        }
+        if (m.Status.State == ConnectionState.Stopped) m.Start();
+        m.Kick(reconnect: true);
+        Changed?.Invoke();
+        return true;
+    }
+
+    /// <summary>Reconnect every source that isn't connected (or all of them with <paramref name="all"/>).</summary>
+    public int ReconnectAll(bool all = false)
+    {
+        int n = 0;
+        foreach (var m in _monitors.Values.ToList())
+            if (all || m.Status.State != ConnectionState.Connected) { if (Reconnect(m.Config.Id)) n++; }
+        return n;
     }
 
     private void OnResumed()

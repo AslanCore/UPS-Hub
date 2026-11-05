@@ -269,7 +269,8 @@ public sealed class NutClient : IAsyncDisposable
     public async Task LogoutAsync(CancellationToken ct = default)
     {
         try { await SendAsync("LOGOUT", ct).ConfigureAwait(false); }
-        catch (Exception ex) when (ex is NutException or NutConnectionException) { }
+        // Also OperationCanceledException (caller's timeout) and InvalidOperationException (reader still busy).
+        catch (Exception ex) when (ex is NutException or NutConnectionException or OperationCanceledException or InvalidOperationException or IOException or ObjectDisposedException) { }
     }
 
     private async Task ExpectOkAsync(string command, CancellationToken ct)
@@ -292,8 +293,14 @@ public sealed class NutClient : IAsyncDisposable
     {
         if (IsConnected)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            await LogoutAsync(cts.Token).ConfigureAwait(false);
+            // Best effort only: on a hung or half-open socket LOGOUT times out (OperationCanceledException) or the
+            // reader is still busy with the timed-out read (InvalidOperationException). Neither may escape.
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                await LogoutAsync(cts.Token).ConfigureAwait(false);
+            }
+            catch { }
         }
         await DisposeTransportAsync().ConfigureAwait(false);
     }

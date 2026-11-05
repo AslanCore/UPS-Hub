@@ -72,7 +72,8 @@ public partial class App : Application
             try
             {
                 // The tray item only opens the confirmation on Shutdown rules; it never starts a test by itself.
-                _tray = new TrayService(this, ShowMain, () => { ShowMain(); _vm.Navigate("shutdown"); _vm.Shutdown.TestCommand.Execute(null); }, Quit);
+                _tray = new TrayService(this, ShowMain, () => { ShowMain(); _vm.Navigate("shutdown"); _vm.Shutdown.TestCommand.Execute(null); }, Quit,
+                    () => _vm.Service.ReconnectAll(all: true));
                 _vm.TrayStateChanged += (h, t) => _tray.Update(h, t);
             }
             catch { _tray = null; /* no tray host (e.g. bare X session) */ }

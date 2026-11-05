@@ -1,6 +1,6 @@
 namespace UpsHub.Core.Monitoring;
 
-/// <summary>Exponential reconnect delay with jitter. Perpetual: it never gives up (see BigWebstas fork, nutdotnet #233).</summary>
+/// <summary>Exponential reconnect delay with jitter. 1 s doubling to a 30 s cap, reset on success. Perpetual: it never gives up (see BigWebstas fork, nutdotnet #233).</summary>
 public sealed class Backoff
 {
     private readonly TimeSpan _min, _max;
@@ -10,7 +10,7 @@ public sealed class Backoff
     public Backoff(TimeSpan? min = null, TimeSpan? max = null, int? seed = null)
     {
         _min = min ?? TimeSpan.FromSeconds(1);
-        _max = max ?? TimeSpan.FromSeconds(60);
+        _max = max ?? TimeSpan.FromSeconds(30);
         _rng = seed is null ? Random.Shared : new Random(seed.Value);
     }
 

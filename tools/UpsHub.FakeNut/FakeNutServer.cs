@@ -74,6 +74,8 @@ public sealed class FakeNutServer : IAsyncDisposable
     public bool DenyAll { get; set; }
     /// <summary>Answer STARTTLS with OK (no real handshake follows; enough for capability probes).</summary>
     public bool StartTlsSupported { get; set; }
+    /// <summary>Keep sockets open but never answer (a hung upsd, a half-open socket after sleep or a reboot).</summary>
+    public bool Frozen { get; set; }
     public ConcurrentQueue<string> Received { get; } = new();
     public int ConnectionCount;
     public int Port => ((IPEndPoint)_listener.LocalEndpoint).Port;
@@ -127,6 +129,7 @@ public sealed class FakeNutServer : IAsyncDisposable
                 Received.Enqueue(line.StartsWith("PASSWORD") ? "PASSWORD ***" : line);
                 var parts = Split(line);
                 if (parts.Count == 0) continue;
+                if (Frozen) continue;
                 var cmd = parts[0].ToUpperInvariant();
                 bool authed = RequiredUsername is null || (user == RequiredUsername && pass == RequiredPassword);
 

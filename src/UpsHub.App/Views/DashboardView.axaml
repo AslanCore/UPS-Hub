@@ -26,6 +26,8 @@
                 </StackPanel>
               </Border>
               <TextBlock Text="{Binding UpdatedText}" Classes="mono subtle" FontSize="11" HorizontalAlignment="Right" />
+              <Button Classes="ghost" Padding="12,7" FontSize="12.5" Content="Reconnect now" HorizontalAlignment="Right"
+                      Command="{Binding ReconnectCommand}" IsVisible="{Binding ShowReconnect}" />
             </StackPanel>
           </Grid>
         </Grid>

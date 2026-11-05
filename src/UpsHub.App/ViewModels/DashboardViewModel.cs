@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using UpsHub.App.Services;
 using UpsHub.Core.Model;
+using UpsHub.Core.Monitoring;
 using UpsHub.Core.Shutdown;
 
 namespace UpsHub.App.ViewModels;
@@ -79,6 +80,16 @@ public sealed partial class DashboardViewModel : ViewModelBase
 
     [RelayCommand] private void Select(UpsChipViewModel chip) { _selected = chip.Address; Refresh(); }
     [RelayCommand] private void AddServer() => _main.Navigate("servers");
+    /// <summary>Hero "Reconnect now": the source behind the shown UPS, or every source that is down.</summary>
+    [RelayCommand]
+    private void Reconnect()
+    {
+        var addr = _selected ?? _svc.PrimaryAddress;
+        if (addr is { } a && _svc.MonitorOf(a) is { } m) _svc.Reconnect(m.Config.Id);
+        else _svc.ReconnectAll();
+        Refresh();
+    }
+    [ObservableProperty] private bool _showReconnect;
 
     [ObservableProperty] private bool _showFirstRun;
 
@@ -143,10 +154,12 @@ public sealed partial class DashboardViewModel : ViewModelBase
             Title = anyServer ? "Connecting." : "No UPS yet.";
             Subtitle = anyServer ? StatusLine() : "Add your NUT server or a USB UPS on this PC to start monitoring.";
             SetPill("Offline", Palette.Subtle, false);
+            ShowReconnect = anyServer && _svc.Monitors.Any(m => m.Status.State != ConnectionState.Connected);
             return;
         }
 
         var connected = _svc.IsConnected(addr.Value);
+        ShowReconnect = !connected;
         var health = snap.Health;
         var source = _svc.SourceLabelOf(addr.Value);   // "USB · APC Back-UPS BK650M2-CH" for a UPS on this PC
         Kicker = source is null ? addr.Value.ToString().ToUpperInvariant() : $"THIS PC · {addr.Value.Ups.ToUpperInvariant()}@USB";
@@ -247,7 +260,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
     {
         var st = _svc.Monitors.Select(m => m.Status).FirstOrDefault(s => s.Message is not null);
         if (st?.Message is { } msg)
-            return st.NextRetry is { } nr ? $"{msg} Retrying in {Math.Max(0, (nr - DateTimeOffset.UtcNow).TotalSeconds):0}s." : msg;
+            return st.State == ConnectionState.Reconnecting ? $"{msg} {ConnectionText.Describe(st, DateTimeOffset.UtcNow)}." : msg;
         return "Waiting for the first reading…";
     }
 

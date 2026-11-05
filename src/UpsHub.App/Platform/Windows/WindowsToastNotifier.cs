@@ -32,6 +32,17 @@ public sealed class WindowsToastNotifier : INotifier
 
     public bool IsAvailable => _notifier is not null;
 
+    /// <summary>One slot per topic: "Power restored" replaces "On battery", "Reconnected" replaces "Connection lost".</summary>
+    internal static string TagFor(string title)
+    {
+        var t = title.ToLowerInvariant();
+        if (t.Contains("battery") || t.Contains("power") || t.Contains("forced")) return "power";
+        if (t.Contains("connect")) return "connection";
+        if (t.Contains("shutdown") || t.Contains("hibernate") || t.Contains("sleep")) return "shutdown";
+        var a = new string(title.Where(char.IsLetterOrDigit).ToArray());
+        return a.Length > 16 ? a[..16] : a;   // Tag is limited to 16 characters
+    }
+
     public void Show(string title, string message, NotificationKind kind = NotificationKind.Info)
     {
         if (_notifier is null) return;
@@ -41,7 +52,17 @@ public sealed class WindowsToastNotifier : INotifier
             var xml = $"<toast{scenario}><visual><binding template=\"ToastGeneric\"><text>{SecurityElement.Escape(title)}</text><text>{SecurityElement.Escape(message)}</text></binding></visual></toast>";
             var doc = new XmlDocument();
             doc.LoadXml(xml);
-            _notifier.Show(new ToastNotification(doc));
+            // High priority: Windows shows it now instead of batching it behind other toasts or holding it while
+            // the user is busy; Tag/Group make a newer power/connection toast replace the old one rather than queue
+            // behind it; expiry drops a toast that is no longer true (e.g. "On battery" after power came back).
+            var toast = new ToastNotification(doc)
+            {
+                Priority = ToastNotificationPriority.High,
+                Tag = TagFor(title),
+                Group = "upshub",
+                ExpirationTime = DateTimeOffset.Now.AddMinutes(kind == NotificationKind.Critical ? 30 : 10),
+            };
+            _notifier.Show(toast);
         }
         catch { /* notifications disabled or unsupported: ignore */ }
     }
