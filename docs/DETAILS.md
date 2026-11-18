@@ -51,13 +51,15 @@ Things that get in the way:
 
 ## Updates and release signing
 
-The app checks GitHub Releases at most once a day. You can also check from Settings → About, or turn the checks off there.
+The app checks for updates at most once a day. You can also check from Settings → About, or turn the checks off there.
 
-An update is installed only if two checks pass:
-- `SHA256SUMS.txt` has a valid minisign signature from the key built into the app (`minisign.pub`, `RWTkuntIbxaEgIdipWngZd/lNqKd4Bvp2H+uqxGQy6/fA2sgF+XcJxZ7`);
-- the installer's SHA-256 matches that file.
+It looks in two places: the signed stable feed on AslanCore Cloud, and GitHub Releases. It picks the newest version that passes verification, and it never downgrades.
 
-The installer then runs silently, and the app restarts.
+An update is installed only if these checks pass:
+- the Cloud manifest, or `SHA256SUMS.txt` for a GitHub release, has a valid minisign signature from the key built into the app (`minisign.pub`, `RWTkuntIbxaEgIdipWngZd/lNqKd4Bvp2H+uqxGQy6/fA2sgF+XcJxZ7`);
+- the installer's SHA-256 matches the signed hash.
+
+The installer then runs silently, and the app restarts. If the UPS is on battery, the install waits until power is back.
 
 To check a release yourself:
 ```
@@ -75,7 +77,7 @@ Code signing (Authenticode) is covered in [CODE-SIGNING.md](CODE-SIGNING.md).
 
 Inno Setup 6.4+, script in `installer/UpsHub.iss`:
 ```
-ISCC installer\UpsHub.iss /DAppVersion=0.4.0
+ISCC installer\UpsHub.iss /DAppVersion=0.6.2
 ```
 
 What it does:
