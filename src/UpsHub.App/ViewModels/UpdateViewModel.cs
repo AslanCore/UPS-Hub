@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using UpsHub.App.Services;
 using UpsHub.Core;
+using UpsHub.Core.Update;
 
 namespace UpsHub.App.ViewModels;
 
@@ -47,8 +48,6 @@ public sealed partial class UpdateViewModel : ViewModelBase
     public string CheckText => IsChecking ? "Checking…" : "Check for updates";
     public string InstallText => $"Install {NewVersion}";
     public string ProgressText => $"{Progress * 100:0}%";
-    public string RepoUrl => AppInfo.RepoUrl;
-    public string RepoLabel => AppInfo.RepoUrl.Replace("https://", "");
     public string LastCheckText => _updates.LastCheck is { } t ? "Last checked " + t.ToLocalTime().ToString("d MMM yyyy, HH:mm") : "Not checked yet";
     /// <summary>Dashboard card: an update was found (or is downloading / failed while installing) and not dismissed.</summary>
     public bool ShowCard => !Dismissed && _updates.Release is not null &&
@@ -90,7 +89,7 @@ public sealed partial class UpdateViewModel : ViewModelBase
             OnPropertyChanged(n);
     }
 
-    /// <summary>GitHub markdown to plain text for the card: headings become caps lines, bullets become "•".</summary>
+    /// <summary>Markdown release notes to plain text for the card: headings become caps lines, bullets become "•".</summary>
     public static string CleanNotes(string md)
     {
         var lines = md.Replace("\r", "").Split('\n').Select(l => l.TrimEnd()).ToList();
@@ -120,9 +119,4 @@ public sealed partial class UpdateViewModel : ViewModelBase
     [RelayCommand] private void Skip() => _updates.Skip();
     [RelayCommand] private void Later() => Dismissed = true;
     [RelayCommand] private void ReleaseNotes() => _updates.OpenReleasePage();
-    [RelayCommand]
-    private void OpenRepo()
-    {
-        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AppInfo.RepoUrl) { UseShellExecute = true }); } catch { }
-    }
 }

@@ -7,7 +7,8 @@ namespace UpsHub.App.Services;
 public enum DemoReleaseMode { NoReleases, Available, UpToDate, Error }
 
 /// <summary>
-/// Demo / screenshots: an in-process stand-in for the GitHub releases API with a throwaway signing
+/// Demo / screenshots: an in-process stand-in for the update sources (no AslanCore Cloud manifest, so the
+/// public GitHub releases path answers) with a throwaway signing
 /// key, so the whole check → download → verify path runs for real without touching the network.
 /// Nothing is installed (the service runs with DryRunInstall).
 /// </summary>
@@ -18,7 +19,13 @@ public sealed class DemoGitHub : HttpMessageHandler
     private readonly string _sums, _sig;
 
     public DemoReleaseMode Mode { get; set; } = DemoReleaseMode.Available;
-    public string Version { get; set; } = "0.5.0";
+    public string Version { get; set; } = NextMinor();
+
+    private static string NextMinor()
+    {
+        var c = UpdateService.Current;
+        return $"{c.Major}.{c.Minor + 1}.0";
+    }
     public Minisign.PublicKey PublicKey => _key.Public;
     public static readonly Uri Base = new("https://demo.invalid/");
     public TimeSpan Latency { get; set; } = TimeSpan.FromMilliseconds(700);

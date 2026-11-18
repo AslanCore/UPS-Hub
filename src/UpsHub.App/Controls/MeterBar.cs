@@ -19,10 +19,10 @@ public sealed class MeterBar : Control
 
     public MeterBar()
     {
-        Height = 6;
+        Height = 4;
         Transitions = new Transitions
         {
-            new DoubleTransition { Property = ValueProperty, Duration = TimeSpan.FromMilliseconds(400), Easing = new Avalonia.Animation.Easings.SplineEasing(0.23, 1, 0.32, 1) },
+            new DoubleTransition { Property = ValueProperty, Duration = TimeSpan.FromMilliseconds(400), Easing = new Avalonia.Animation.Easings.SplineEasing(0, 0, 0, 1) },
         };
     }
 
@@ -32,7 +32,7 @@ public sealed class MeterBar : Control
     public IBrush? BarBrush { get => GetValue(BarBrushProperty); set => SetValue(BarBrushProperty, value); }
     public bool HasValue { get => GetValue(HasValueProperty); set => SetValue(HasValueProperty, value); }
 
-    private static readonly IBrush Track = new SolidColorBrush(Color.Parse("#14F3F1EE"));
+    private static readonly IBrush Track = new SolidColorBrush(Color.Parse("#26FFFFFF"));
 
     public override void Render(DrawingContext ctx)
     {

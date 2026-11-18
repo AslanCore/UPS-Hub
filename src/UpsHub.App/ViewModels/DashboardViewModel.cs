@@ -178,7 +178,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
         var pill = !connected ? ("Reconnecting", Palette.Degraded) : health switch
         {
             UpsHealth.Online => ("Online", Palette.Up),
-            UpsHealth.OnBattery => ("On battery", Palette.Primary),
+            UpsHealth.OnBattery => ("On battery", Palette.Degraded),
             UpsHealth.LowBattery => ("Low battery", Palette.Down),
             UpsHealth.ForcedShutdown => ("FSD", Palette.Down),
             UpsHealth.Alarm => ("Alarm", Palette.Degraded),

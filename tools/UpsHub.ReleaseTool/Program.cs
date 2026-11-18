@@ -1,14 +1,16 @@
 using System.Text;
 using UpsHub.Core.Update;
 
-// Release helper for UPS Hub (used by .github/workflows/release.yml and locally).
+// Release helper for UPS Hub (used by ci/release.yml and locally).
 //   keygen <secret-key-file> <public-key-file>   new Ed25519 key; the secret file is created 0600 and never printed
 //   sums <out-file> <file>...                    SHA256SUMS.txt for the given files
 //   sign <file> (--key-file PATH | --key-env NAME) [--comment TEXT]   writes <file>.minisig
 //   verify <file> <public-key-file|key>          checks <file>.minisig
+//   manifest <out-file> <version> <installer> <base-url> [--portable FILE]
+//                                                AslanCore Cloud update manifest (sign it with `sign`)
 static int Usage()
 {
-    Console.Error.WriteLine("usage: upshub-release keygen SECRET PUBLIC | sums OUT FILE... | sign FILE (--key-file P | --key-env NAME) [--comment T] | verify FILE PUBKEY");
+    Console.Error.WriteLine("usage: upshub-release keygen SECRET PUBLIC | sums OUT FILE... | sign FILE (--key-file P | --key-env NAME) [--comment T] | verify FILE PUBKEY | manifest OUT VERSION INSTALLER BASE-URL [--portable ZIP]");
     return 2;
 }
 
@@ -62,10 +64,43 @@ try
             Console.WriteLine(ok ? $"OK: {args[1]} is signed by {pub.KeyIdHex}." : "FAILED: " + err);
             return ok ? 0 : 1;
         }
+        case "manifest" when args.Length is 5 or 7:
+        {
+            var ver = SemVer.TryParse(args[2]) ?? throw new FormatException($"{args[2]} is not a version.");
+            if (ver.IsPrerelease || args[2].StartsWith('v')) throw new FormatException("The stable manifest takes a plain release version such as 0.6.0.");
+            var installer = args[3];
+            if (Path.GetFileName(installer) != VerifiedRelease.InstallerNameFor(ver)) throw new FormatException($"The installer must be named {VerifiedRelease.InstallerNameFor(ver)}.");
+            var baseUrl = new Uri(args[4].EndsWith('/') ? args[4] : args[4] + "/");
+            if (!UrlPolicy.Cloud.Allows(baseUrl)) throw new FormatException($"{baseUrl} is not an approved AslanCore Cloud address.");
+            async Task<object> Entry(string f) => new
+            {
+                name = Path.GetFileName(f),
+                url = new Uri(baseUrl, Uri.EscapeDataString(Path.GetFileName(f))).ToString(),
+                size = new FileInfo(f).Length,
+                sha256 = await Checksums.Sha256Async(f),
+            };
+            object? portable = args.Length == 7 && args[5] == "--portable" ? await Entry(args[6]) : null;
+            var doc = new System.Text.Json.Nodes.JsonObject
+            {
+                ["schema"] = CloudFeed.Schema,
+                ["product"] = "AslanCore.UpsHub",
+                ["channel"] = CloudFeed.Channel,
+                ["version"] = ver.ToString(),
+                ["published"] = DateTimeOffset.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                ["installer"] = System.Text.Json.JsonSerializer.SerializeToNode(await Entry(installer)),
+            };
+            if (portable is not null) doc["portable"] = System.Text.Json.JsonSerializer.SerializeToNode(portable);
+            var json = doc.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }) + "\n";
+            // Self-check with the same parser the app uses.
+            CloudFeed.ParseManifest(Encoding.UTF8.GetBytes(json), UrlPolicy.Cloud, "AslanCore.UpsHub");
+            File.WriteAllText(args[1], json, new UTF8Encoding(false));
+            Console.Write(json);
+            return 0;
+        }
         default: return Usage();
     }
 }
-catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException)
+catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException or UpdateVerificationException)
 {
     Console.Error.WriteLine(ex.Message);
     return 1;

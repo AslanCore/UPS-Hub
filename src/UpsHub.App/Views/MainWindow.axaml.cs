@@ -22,14 +22,13 @@ public partial class MainWindow : Window, INotifier
             // Draw our own title bar but keep native resize borders, snap and shadow.
             ExtendClientAreaToDecorationsHint = true;
             ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome;
-            ExtendClientAreaTitleBarHeightHint = 52;
+            ExtendClientAreaTitleBarHeightHint = 32;
         }
         else
         {
             SystemDecorations = SystemDecorations.None;
         }
         TitleBar.PointerPressed += DragWindow;
-        BrandBar.PointerPressed += DragWindow;
         TitleBar.DoubleTapped += (_, _) => ToggleMax();
         MinButton.Click += (_, _) => WindowState = WindowState.Minimized;
         MaxButton.Click += (_, _) => ToggleMax();

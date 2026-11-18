@@ -29,7 +29,7 @@ public sealed partial class MainViewModel : ViewModelBase
     public CountdownViewModel Countdown { get; }
 
     public string AppName => AppInfo.DisplayName;
-    public string Tagline => AppInfo.Tagline.ToUpperInvariant();
+    public string Tagline => AppInfo.Tagline;
     public string Version => "v" + AppInfo.Version;
     public bool IsDemo => Service.IsDemo;
 

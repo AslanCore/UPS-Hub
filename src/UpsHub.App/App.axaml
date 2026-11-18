@@ -10,23 +10,48 @@
         <ResourceInclude Source="avares://UpsHub/Styles/Icons.axaml" />
         <ResourceInclude Source="avares://UpsHub/Styles/SharedTemplates.axaml" />
       </ResourceDictionary.MergedDictionaries>
-      <!-- Fluent overrides so stock controls pick up the AslanCore palette -->
-      <CornerRadius x:Key="ControlCornerRadius">10</CornerRadius>
-      <CornerRadius x:Key="OverlayCornerRadius">12</CornerRadius>
-      <FontFamily x:Key="ContentControlThemeFontFamily">avares://UpsHub/Assets/Fonts#IBM Plex Sans</FontFamily>
+      <!-- Switches and check boxes use the accent when on, with a dark knob / tick for contrast -->
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#FF5C1A" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FF7336" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#E04E12" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#FF5C1A" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#FF7336" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="#E04E12" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#111111" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#111111" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="#111111" />
+          <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="#FF5C1A" />
+          <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="#FF7336" />
+          <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="#E04E12" />
+          <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeChecked" Color="#FF5C1A" />
+          <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" Color="#FF7336" />
+          <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" Color="#E04E12" />
+          <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="#111111" />
+          <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="#111111" />
+          <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="#111111" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <!-- Fluent 2 shape: 4px controls, 8px flyouts -->
+      <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+      <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+      <FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI Variable Text, Segoe UI Variable, Segoe UI, Inter, sans-serif</FontFamily>
     </ResourceDictionary>
   </Application.Resources>
   <Application.Styles>
     <FluentTheme>
       <FluentTheme.Palettes>
+        <!-- Neutral Windows 11 dark greys; the accent is the only colour -->
         <ColorPaletteResources x:Key="Dark"
                                Accent="#FF5C1A"
-                               AltHigh="#0A0908" AltLow="#0A0908" AltMedium="#0A0908" AltMediumHigh="#0A0908" AltMediumLow="#0A0908"
-                               BaseHigh="#F3F1EE" BaseLow="#2A2826" BaseMedium="#9A9690" BaseMediumHigh="#C9C5BF" BaseMediumLow="#6B6762"
-                               ChromeAltLow="#C9C5BF" ChromeBlackHigh="#000000" ChromeBlackLow="#C9C5BF" ChromeBlackMedium="#000000"
-                               ChromeBlackMediumLow="#000000" ChromeDisabledHigh="#2A2826" ChromeDisabledLow="#6B6762" ChromeGray="#9A9690"
-                               ChromeHigh="#3A3734" ChromeLow="#121110" ChromeMedium="#1A1917" ChromeMediumLow="#22201E"
-                               ChromeWhite="#F3F1EE" ListLow="#1A1917" ListMedium="#2A2826" RegionColor="#0A0908" ErrorText="#E24B3A" />
+                               RegionColor="#202020"
+                               AltHigh="#202020" AltLow="#202020" AltMedium="#202020" AltMediumHigh="#202020" AltMediumLow="#202020"
+                               BaseHigh="#FFFFFF" BaseLow="#333333" BaseMedium="#9D9D9D" BaseMediumHigh="#C5C5C5" BaseMediumLow="#6E6E6E"
+                               ChromeAltLow="#C5C5C5" ChromeBlackHigh="#000000" ChromeBlackLow="#C5C5C5" ChromeBlackMedium="#000000"
+                               ChromeBlackMediumLow="#000000" ChromeDisabledHigh="#333333" ChromeDisabledLow="#6E6E6E" ChromeGray="#9D9D9D"
+                               ChromeHigh="#3A3A3A" ChromeLow="#1C1C1C" ChromeMedium="#272727" ChromeMediumLow="#2D2D2D"
+                               ChromeWhite="#FFFFFF" ListLow="#2D2D2D" ListMedium="#333333" ErrorText="#FF6B6B" />
       </FluentTheme.Palettes>
     </FluentTheme>
     <StyleInclude Source="avares://UpsHub/Styles/Theme.axaml" />

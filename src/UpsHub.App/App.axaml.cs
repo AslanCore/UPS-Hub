@@ -49,15 +49,20 @@ public partial class App : Application
                 _svc.DiscoveryTweak = _demoNet.Tweak;
             }
             _vm = new MainViewModel(_svc);
-            // Updates: GitHub Releases for real; demo / screenshots use an in-process fake with a throwaway key.
+            // Updates: AslanCore Cloud first, public GitHub releases second; demo / screenshots use an in-process fake with a throwaway key.
             if (opt.Demo)
             {
                 DemoGitHub = new DemoGitHub { Mode = opt.ScreenshotDir is null ? DemoReleaseMode.Available : DemoReleaseMode.NoReleases };
-                _updates = new UpdateService(_svc, new HttpClient(DemoGitHub), DemoGitHub.Base, DemoGitHub.PublicKey)
-                    { DryRunInstall = true, UpdatesDirectory = Path.Combine(dir, "updates") };
+                var demoPolicy = new Core.Update.UrlPolicy(true, DemoGitHub.Base.Host);
+                _updates = new UpdateService(_svc, new HttpClient(DemoGitHub), new Core.Update.UpdateFeedOptions
+                    {
+                        CloudManifest = new Uri(DemoGitHub.Base, "upshub/stable/manifest.json"), CloudPolicy = demoPolicy,
+                        GitHubRepo = "AslanCore/UPS-Hub", GitHubApi = DemoGitHub.Base, GitHubPolicy = demoPolicy, Key = DemoGitHub.PublicKey,
+                    }, dryRun: true, updatesDirectory: Path.Combine(dir, "updates"));
             }
             else _updates = new UpdateService(_svc);
             _updates.QuitForInstall = Quit;
+            _updates.WindowHidden = () => _window is null || !_window.IsVisible;
             _vm.Updates = new UpdateViewModel(_updates, _svc);
             _window = new MainWindow { DataContext = _vm };
             _svc.InAppNotifier = _window;
@@ -147,7 +152,12 @@ public partial class App : Application
         if (_window is not null) _window.AllowClose = true;
         _tray?.Dispose();
         _updates?.Dispose();
-        if (_svc is not null) await _svc.DisposeAsync();
+        // Bounded, so an update handover (Setup waits up to a minute for UPS Hub to close) can't be held up.
+        if (_svc is not null)
+        {
+            try { await _svc.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(15)); }
+            catch (TimeoutException) { }
+        }
         if (_demoServer is not null) await _demoServer.DisposeAsync();
         if (_demoNet is not null) await _demoNet.DisposeAsync();
         (ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();

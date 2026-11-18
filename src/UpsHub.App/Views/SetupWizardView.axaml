@@ -10,26 +10,23 @@
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Left" />
       <Setter Property="Padding" Value="14,12" />
-      <Setter Property="CornerRadius" Value="12" />
-    </Style>
-    <Style Selector="Button.mode /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="BoxShadow" Value="{StaticResource ShadowBorder}" />
+      <Setter Property="CornerRadius" Value="8" />
     </Style>
     <Style Selector="Button.mode.selected /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource PrimarySoftBrush}" />
-      <Setter Property="BoxShadow" Value="0 0 0 1 #FF5C1A" />
+      <Setter Property="Background" Value="#1FFFFFFF" />
+      <Setter Property="BorderBrush" Value="{StaticResource StrokeStrongBrush}" />
     </Style>
     <Style Selector="Button.mode TextBlock.mt"><Setter Property="FontSize" Value="13.5" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
     <Style Selector="Button.mode TextBlock.md"><Setter Property="FontSize" Value="11.5" /><Setter Property="Foreground" Value="{StaticResource MutedBrush}" /><Setter Property="TextWrapping" Value="Wrap" /></Style>
-    <Style Selector="Border.rail"><Setter Property="Width" Value="24" /><Setter Property="Height" Value="24" /><Setter Property="CornerRadius" Value="7" />
-      <Setter Property="Background" Value="{StaticResource ElevatedBrush}" /></Style>
-    <Style Selector="Border.rail TextBlock"><Setter Property="FontFamily" Value="{StaticResource FontMono}" /><Setter Property="FontSize" Value="11.5" />
-      <Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{StaticResource SubtleBrush}" />
+    <Style Selector="Border.rail"><Setter Property="Width" Value="24" /><Setter Property="Height" Value="24" /><Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Background" Value="#14FFFFFF" /></Style>
+    <Style Selector="Border.rail TextBlock"><Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
       <Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
     <Style Selector="Border.rail.on"><Setter Property="Background" Value="{StaticResource PrimaryBrush}" /></Style>
     <Style Selector="Border.rail.on TextBlock"><Setter Property="Foreground" Value="{StaticResource PrimaryForegroundBrush}" /></Style>
-    <Style Selector="Border.rail.done"><Setter Property="Background" Value="{StaticResource PrimarySoftBrush}" /></Style>
-    <Style Selector="Border.rail.done TextBlock"><Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" /></Style>
+    <Style Selector="Border.rail.done"><Setter Property="Background" Value="#26FFFFFF" /></Style>
+    <Style Selector="Border.rail.done TextBlock"><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /></Style>
     <Style Selector="TextBlock.railt"><Setter Property="FontSize" Value="13" /><Setter Property="Foreground" Value="{StaticResource MutedBrush}" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
     <Style Selector="TextBlock.railt.on"><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
     <Style Selector="Grid.row"><Setter Property="MinHeight" Value="44" /></Style>
@@ -38,17 +35,16 @@
   </UserControl.Styles>
 
   <Panel Background="{StaticResource BgBrush}">
-    <c:GridBackdrop />
-    <Border Classes="card lg glow" Padding="0" MaxWidth="1040" MaxHeight="700" Margin="40,64,40,40" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Border Classes="card lg" Padding="0" MaxWidth="1040" MaxHeight="700" Margin="40,64,40,40" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
       <Grid ColumnDefinitions="248,*">
         <!-- ===== Rail ===== -->
         <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0" Padding="22,24">
           <DockPanel>
             <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,28">
-              <Image Source="avares://UpsHub/Assets/icon-64.png" Width="36" Height="36" RenderOptions.BitmapInterpolationMode="HighQuality" />
+              <PathIcon Data="{StaticResource IconBattery}" Width="24" Height="24" Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" />
               <StackPanel VerticalAlignment="Center" Spacing="1">
                 <TextBlock Text="{Binding AppName}" Classes="display" FontSize="16" />
-                <TextBlock Text="SETUP" Classes="kicker accent" />
+                <TextBlock Text="Setup" Classes="kicker" />
               </StackPanel>
             </StackPanel>
             <TextBlock DockPanel.Dock="Bottom" Classes="subtle" FontSize="11.5" TextWrapping="Wrap"
@@ -94,8 +90,8 @@
             <Panel>
               <!-- 1 · Welcome -->
               <StackPanel Spacing="14" IsVisible="{Binding IsWelcome}" VerticalAlignment="Center" MaxWidth="560" HorizontalAlignment="Left" Margin="0,30,0,0">
-                <TextBlock Text="WELCOME" Classes="kicker accent" />
-                <TextBlock Text="Keep this PC safe when the power goes." Classes="display" FontSize="30" TextWrapping="Wrap" />
+                <TextBlock Text="Welcome" Classes="kicker" />
+                <TextBlock Text="Keep this PC safe when the power goes." Classes="display" FontSize="28" TextWrapping="Wrap" />
                 <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="14" LineHeight="21"
                            Text="UPS Hub watches your UPS, through a NUT server on your network or a USB cable to this PC, and shuts the PC down cleanly before the battery runs out. This takes about a minute." />
                 <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,14,0,0">
@@ -109,24 +105,24 @@
               <!-- 2 · Connect -->
               <StackPanel Spacing="14" IsVisible="{Binding IsConnect}">
                 <StackPanel Spacing="4">
-                  <TextBlock Text="CONNECT A UPS" Classes="kicker accent" />
+                  <TextBlock Text="Connect a UPS" Classes="kicker" />
                   <TextBlock Text="Where is your UPS?" Classes="display h2" />
                 </StackPanel>
                 <Grid ColumnDefinitions="*,10,*,10,*,10,*">
                   <Button Classes="mode" Classes.selected="{Binding IsAuto}" Command="{Binding SetModeCommand}" CommandParameter="Auto">
-                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconRadar}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource PrimaryBrush}" />
+                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconRadar}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource MutedBrush}" />
                       <TextBlock Classes="mt" Text="Auto-detect" /><TextBlock Classes="md" Text="Scan the network for NUT servers" /></StackPanel>
                   </Button>
                   <Button Grid.Column="2" Classes="mode" Classes.selected="{Binding IsUsb}" Command="{Binding SetModeCommand}" CommandParameter="Usb">
-                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconUsb}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource PrimaryBrush}" />
+                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconUsb}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource MutedBrush}" />
                       <TextBlock Classes="mt" Text="USB on this PC" /><TextBlock Classes="md" Text="A UPS plugged in here" /></StackPanel>
                   </Button>
                   <Button Grid.Column="4" Classes="mode" Classes.selected="{Binding IsManual}" Command="{Binding SetModeCommand}" CommandParameter="Manual">
-                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconServer}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource PrimaryBrush}" />
+                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconServer}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource MutedBrush}" />
                       <TextBlock Classes="mt" Text="Enter manually" /><TextBlock Classes="md" Text="Address of your NUT server" /></StackPanel>
                   </Button>
                   <Button Grid.Column="6" Classes="mode" Classes.selected="{Binding IsImport}" Command="{Binding SetModeCommand}" CommandParameter="Import" IsEnabled="{Binding HasWinNut}">
-                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconTune}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource PrimaryBrush}" />
+                    <StackPanel Spacing="4"><PathIcon Data="{StaticResource IconTune}" Width="15" Height="15" HorizontalAlignment="Left" Foreground="{StaticResource MutedBrush}" />
                       <TextBlock Classes="mt" Text="Import WinNUT" /><TextBlock Classes="md" Text="{Binding HasWinNut, Converter={x:Static vm:WizardText.WinNutHint}}" /></StackPanel>
                   </Button>
                 </Grid>
@@ -137,7 +133,7 @@
                   <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Spacing="6">
                       <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Ellipse Width="7" Height="7" Fill="{StaticResource PrimaryBrush}" Classes="pulse" IsVisible="{Binding IsScanning}" VerticalAlignment="Center" />
+                        <Ellipse Width="8" Height="8" Fill="{StaticResource MutedBrush}" Classes="pulse" IsVisible="{Binding IsScanning}" VerticalAlignment="Center" />
                         <TextBlock Text="{Binding PhaseText}" Classes="kicker" VerticalAlignment="Center" />
                       </StackPanel>
                       <TextBlock Text="{Binding ProgressText}" Classes="mono subtle" FontSize="11" TextTrimming="CharacterEllipsis" />
@@ -174,17 +170,17 @@
                 <Border Classes="panel" Padding="18" IsVisible="{Binding IsManual}">
                   <StackPanel Spacing="10">
                     <Grid ColumnDefinitions="2*,10,*" RowDefinitions="Auto,Auto,8,Auto,Auto">
-                      <TextBlock Text="HOST OR IP" Classes="label" />
+                      <TextBlock Text="Host or ip" Classes="label" />
                       <TextBox Grid.Row="1" Text="{Binding Host}" Watermark="192.0.2.10 or nut.lan" />
-                      <TextBlock Grid.Column="2" Text="PORT" Classes="label" />
+                      <TextBlock Grid.Column="2" Text="Port" Classes="label" />
                       <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding Port}" Minimum="1" Maximum="65535" FormatString="0" ShowButtonSpinner="False" />
-                      <TextBlock Grid.Row="3" Text="UPS NAME (OPTIONAL)" Classes="label" />
+                      <TextBlock Grid.Row="3" Text="UPS name (optional)" Classes="label" />
                       <TextBox Grid.Row="4" Text="{Binding UpsName}" Watermark="all UPSes on the server" />
                     </Grid>
                     <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto">
-                      <TextBlock Text="USERNAME (OPTIONAL)" Classes="label" />
+                      <TextBlock Text="Username (optional)" Classes="label" />
                       <TextBox Grid.Row="1" Text="{Binding Username}" />
-                      <TextBlock Grid.Column="2" Text="PASSWORD" Classes="label" />
+                      <TextBlock Grid.Column="2" Text="Password" Classes="label" />
                       <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Password}" PasswordChar="•" />
                     </Grid>
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -198,7 +194,7 @@
                 <!-- import -->
                 <Border Classes="panel" Padding="18" IsVisible="{Binding IsImport}">
                   <StackPanel Spacing="10">
-                    <TextBlock Text="FOUND WINNUT SETTINGS" Classes="kicker accent" />
+                    <TextBlock Text="Found WinNUT settings" Classes="kicker" />
                     <ItemsControl ItemsSource="{Binding ImportPreview}">
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="x:String">
@@ -209,9 +205,9 @@
                     <TextBlock Classes="muted" FontSize="12.5" TextWrapping="Wrap" IsVisible="{Binding ImportHasServer}"
                                Text="WinNUT keeps the NUT password encrypted with a key UPS Hub can't read, so it isn't imported. If your server needs a login, enter it here." />
                     <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto" IsVisible="{Binding ImportHasServer}">
-                      <TextBlock Text="USERNAME" Classes="label" />
+                      <TextBlock Text="Username" Classes="label" />
                       <TextBox Grid.Row="1" Text="{Binding ImportUsername}" />
-                      <TextBlock Grid.Column="2" Text="PASSWORD" Classes="label" />
+                      <TextBlock Grid.Column="2" Text="Password" Classes="label" />
                       <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding ImportPassword}" PasswordChar="•" />
                     </Grid>
                     <StackPanel Orientation="Horizontal" Spacing="10">
@@ -222,7 +218,7 @@
                 </Border>
 
                 <!-- added so far -->
-                <Border Classes="panel" Padding="14,10" IsVisible="{Binding HasConnected}" Background="{StaticResource StatusUpSoftBrush}">
+                <Border Classes="panel" Padding="14,10" IsVisible="{Binding HasConnected}" >
                   <StackPanel Spacing="4">
                     <TextBlock Text="{Binding ConnectedCount, StringFormat='CONNECTED · {0}'}" Classes="kicker" Foreground="{StaticResource StatusUpBrush}" />
                     <ItemsControl ItemsSource="{Binding Connected}">
@@ -237,7 +233,7 @@
               <!-- 3 · Shutdown basics -->
               <StackPanel Spacing="14" IsVisible="{Binding IsShutdownStep}" MaxWidth="640" HorizontalAlignment="Left">
                 <StackPanel Spacing="4">
-                  <TextBlock Text="SHUTDOWN BASICS" Classes="kicker accent" />
+                  <TextBlock Text="Shutdown basics" Classes="kicker" />
                   <TextBlock Text="What should happen on a long outage?" Classes="display h2" />
                 </StackPanel>
                 <Grid Classes="row" ColumnDefinitions="*,Auto">
@@ -256,11 +252,11 @@
                   </Button>
                 </Grid>
                 <Grid ColumnDefinitions="*,10,*,10,*" RowDefinitions="Auto,Auto" IsEnabled="{Binding RulesEnabled}">
-                  <TextBlock Text="BATTERY BELOW (%)" Classes="label" />
+                  <TextBlock Text="Battery below (%)" Classes="label" />
                   <NumericUpDown Grid.Row="1" Value="{Binding BatteryBelow}" Minimum="0" Maximum="95" Increment="5" FormatString="0" />
-                  <TextBlock Grid.Column="2" Text="OR RUNTIME BELOW (MIN)" Classes="label" />
+                  <TextBlock Grid.Column="2" Text="Or runtime below (min)" Classes="label" />
                   <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding RuntimeMinutesBelow}" Minimum="0" Maximum="120" Increment="1" FormatString="0.#" />
-                  <TextBlock Grid.Column="4" Text="WARNING (S)" Classes="label" />
+                  <TextBlock Grid.Column="4" Text="Warning (s)" Classes="label" />
                   <NumericUpDown Grid.Row="1" Grid.Column="4" Value="{Binding CountdownSeconds}" Minimum="0" Maximum="600" Increment="10" FormatString="0" />
                 </Grid>
                 <Border Classes="panel" Padding="14,12">
@@ -272,7 +268,7 @@
               <!-- 4 · Startup & notifications -->
               <StackPanel Spacing="8" IsVisible="{Binding IsStartup}" MaxWidth="640" HorizontalAlignment="Left">
                 <StackPanel Spacing="4" Margin="0,0,0,8">
-                  <TextBlock Text="STARTUP &amp; ALERTS" Classes="kicker accent" />
+                  <TextBlock Text="STARTUP &amp; ALERTS" Classes="kicker" />
                   <TextBlock Text="Stay on watch." Classes="display h2" />
                 </StackPanel>
                 <Grid Classes="row" ColumnDefinitions="*,Auto">
@@ -296,11 +292,9 @@
 
               <!-- 5 · Done -->
               <StackPanel Spacing="14" IsVisible="{Binding IsDone}" MaxWidth="560" HorizontalAlignment="Left" Margin="0,30,0,0">
-                <Border Width="52" Height="52" CornerRadius="14" Background="{StaticResource StatusUpSoftBrush}" HorizontalAlignment="Left">
-                  <PathIcon Data="{StaticResource IconCheck}" Width="22" Height="22" Foreground="{StaticResource StatusUpBrush}" />
-                </Border>
-                <TextBlock Text="ALL SET" Classes="kicker accent" />
-                <TextBlock Text="UPS Hub is on watch." Classes="display" FontSize="30" />
+                <PathIcon Data="{StaticResource IconCheck}" Width="28" Height="28" Foreground="{StaticResource StatusUpBrush}" HorizontalAlignment="Left" />
+                <TextBlock Text="All set" Classes="kicker" />
+                <TextBlock Text="UPS Hub is on watch." Classes="display" FontSize="28" />
                 <TextBlock Text="{Binding DoneSummary}" Classes="muted" FontSize="14" TextWrapping="Wrap" LineHeight="21" />
                 <Button Classes="primary" Content="Open the dashboard" Command="{Binding CloseCommand}" HorizontalAlignment="Left" Padding="18,10" Margin="0,10,0,0" />
               </StackPanel>

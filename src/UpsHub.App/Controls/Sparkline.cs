@@ -4,7 +4,7 @@ using Avalonia.Media;
 
 namespace UpsHub.App.Controls;
 
-/// <summary>Minimal line chart with a soft area fill. Points are 0..Maximum.</summary>
+/// <summary>Minimal line chart: a flat line over faint grid lines. Points are 0..Maximum.</summary>
 public sealed class Sparkline : Control
 {
     public static readonly StyledProperty<IReadOnlyList<double>?> PointsProperty =
@@ -22,7 +22,7 @@ public sealed class Sparkline : Control
     public override void Render(DrawingContext ctx)
     {
         var w = Bounds.Width; var h = Bounds.Height;
-        var grid = new Pen(new SolidColorBrush(Color.Parse("#0FF3F1EE")), 1);
+        var grid = new Pen(new SolidColorBrush(Color.Parse("#0FFFFFFF")), 1);
         for (int i = 1; i < 4; i++) ctx.DrawLine(grid, new Point(0, h * i / 4), new Point(w, h * i / 4));
         var pts = Points;
         if (pts is null || pts.Count < 2 || Maximum <= 0) return;
@@ -30,18 +30,6 @@ public sealed class Sparkline : Control
         Point P(int i) => new(i * step, h - 2 - Math.Clamp(pts[i] / Maximum, 0, 1) * (h - 4));
         var line = new StreamGeometry();
         using (var g = line.Open()) { g.BeginFigure(P(0), false); for (int i = 1; i < pts.Count; i++) g.LineTo(P(i)); g.EndFigure(false); }
-        var area = new StreamGeometry();
-        using (var g = area.Open())
-        {
-            g.BeginFigure(new Point(0, h), true); for (int i = 0; i < pts.Count; i++) g.LineTo(P(i));
-            g.LineTo(new Point(w, h)); g.EndFigure(true);
-        }
-        var fill = new LinearGradientBrush
-        {
-            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.FromArgb(0x40, LineColor.R, LineColor.G, LineColor.B), 0), new GradientStop(Color.FromArgb(0, LineColor.R, LineColor.G, LineColor.B), 1) },
-        };
-        ctx.DrawGeometry(fill, null, area);
-        ctx.DrawGeometry(null, new Pen(new SolidColorBrush(LineColor), 2, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round), line);
+        ctx.DrawGeometry(null, new Pen(new SolidColorBrush(LineColor), 1.5, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round), line);
     }
 }

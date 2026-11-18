@@ -6,39 +6,32 @@
         x:DataType="vm:CountdownViewModel"
         Title="{Binding WindowTitle}"
         Icon="avares://UpsHub/Assets/upshub.ico"
-        Width="460" Height="430" CanResize="False" Topmost="True" ShowInTaskbar="True"
+        Width="460" Height="300" CanResize="False" Topmost="True" ShowInTaskbar="True"
         SystemDecorations="None" Background="Transparent" TransparencyLevelHint="Transparent"
         WindowStartupLocation="CenterScreen">
-  <Border Margin="0" Background="{StaticResource SurfaceBrush}" CornerRadius="24" BoxShadow="{StaticResource ShadowRed}" ClipToBounds="True">
-    <Grid>
-      <c:GridBackdrop Opacity="0.9" />
-      <StackPanel Margin="30,26,30,26" Spacing="16">
-        <Grid ColumnDefinitions="Auto,*,Auto">
-          <Border Classes="squircle" Width="30" Height="30" CornerRadius="6.75">
-            <Image Source="avares://UpsHub/Assets/logo-512.png" Stretch="UniformToFill" />
-          </Border>
-          <TextBlock Grid.Column="1" Text="{Binding Kicker}" Classes="kicker accent" VerticalAlignment="Center" Margin="12,0,0,0" />
-          <Border Grid.Column="2" Classes="pill" Background="{StaticResource StatusDownSoftBrush}" Padding="8,2" IsVisible="{Binding IsTest}">
-            <TextBlock Text="{Binding TestBadge}" Classes="mono" FontSize="10" LetterSpacing="1.5" Foreground="{StaticResource StatusDownBrush}" />
-          </Border>
-        </Grid>
+  <Border Margin="0" Background="#2C2C2C" BorderBrush="#33FFFFFF" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+    <StackPanel Margin="28,24,28,24" Spacing="14">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <PathIcon Data="{StaticResource IconPower}" Width="16" Height="16" Foreground="{StaticResource StatusDownBrush}" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1" Text="{Binding Kicker}" Classes="kicker" VerticalAlignment="Center" Margin="10,0,0,0" />
+        <Border Grid.Column="2" Classes="badge" Margin="0" IsVisible="{Binding IsTest}">
+          <TextBlock Text="{Binding TestBadge}" />
+        </Border>
+      </Grid>
 
-        <StackPanel Spacing="2" HorizontalAlignment="Center">
-          <TextBlock Text="{Binding Heading}" Classes="display" FontSize="20" HorizontalAlignment="Center" />
-          <Grid Width="190" Height="190" Margin="0,6,0,0">
-            <c:RingGauge Value="{Binding Progress}" ValueBrush="{StaticResource StatusDownBrush}" Thickness="9" />
-            <TextBlock Text="{Binding TimeText}" Classes="value" FontSize="44" HorizontalAlignment="Center" VerticalAlignment="Center" />
-          </Grid>
-        </StackPanel>
-
-        <TextBlock Text="{Binding Reason}" Classes="muted" FontSize="13" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
-
-        <Grid ColumnDefinitions="*,8,Auto,8,*">
-          <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="Cancel" Command="{Binding CancelCommand}" />
-          <Button Grid.Column="2" Classes="ghost" Content="{Binding ExtendText}" Command="{Binding ExtendCommand}" IsVisible="{Binding CanExtend}" />
-          <Button Grid.Column="4" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{Binding NowText}" Command="{Binding NowCommand}" />
-        </Grid>
+      <StackPanel Spacing="4" HorizontalAlignment="Stretch">
+        <TextBlock Text="{Binding Heading}" Classes="display" FontSize="20" />
+        <TextBlock Text="{Binding TimeText}" Classes="value" FontSize="48" Margin="0,10,0,6" />
+        <c:MeterBar Minimum="0" Maximum="100" Value="{Binding Progress}" BarBrush="{StaticResource PrimaryBrush}" />
       </StackPanel>
-    </Grid>
+
+      <TextBlock Text="{Binding Reason}" Classes="muted" TextWrapping="Wrap" />
+
+      <Grid ColumnDefinitions="Auto,8,Auto,*,Auto" Margin="0,6,0,0">
+        <Button Content="Cancel" Command="{Binding CancelCommand}" />
+        <Button Grid.Column="2" Content="{Binding ExtendText}" Command="{Binding ExtendCommand}" IsVisible="{Binding CanExtend}" />
+        <Button Grid.Column="4" Classes="primary" Content="{Binding NowText}" Command="{Binding NowCommand}" />
+      </Grid>
+    </StackPanel>
   </Border>
 </Window>

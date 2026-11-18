@@ -103,8 +103,10 @@ public sealed class GeneralSettings
     public bool NotifyOnConnectionEvents { get; set; } = true;
     public int PollIntervalSeconds { get; set; } = 2;
     public double PowerFactor { get; set; } = 0.6;
-    /// <summary>Look for a new UPS Hub release on GitHub once a day.</summary>
+    /// <summary>Look for a new UPS Hub release (AslanCore Cloud and GitHub) once a day.</summary>
     public bool AutoCheckUpdates { get; set; } = true;
+    /// <summary>With automatic checks on, install a verified update and restart without asking.</summary>
+    public bool AutoInstallUpdates { get; set; } = true;
 }
 
 public sealed class DiscoverySettings
